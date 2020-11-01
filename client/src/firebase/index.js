@@ -32,7 +32,6 @@ class Firebase {
   }
 
   async getLoginUser(user) {
-    console.log("~~user", user);
     const userData = {
       id: user.uid,
       nickname: user.displayName,
