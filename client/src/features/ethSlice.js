@@ -8,17 +8,18 @@ const ethSlice = createSlice({
     contractState: {
       loading: false,
       done: false,
-      error: null
+      error: null,
     },
     contractInstance: {
       factoryContract: null,
-      campaignContract: null
+      campaignContract: null,
     },
     initialized: false,
-    campaigns: []
+    campaigns: [],
+    currentAccount: "",
   },
   reducers: {
-    loadWeb3Request: state => {
+    loadWeb3Request: (state) => {
       state.web3State.loading = true;
       state.web3State.done = false;
       state.web3State.error = null;
@@ -34,7 +35,7 @@ const ethSlice = createSlice({
       state.web3State.done = true;
     },
 
-    loadFactoryContractRequest: state => {
+    loadFactoryContractRequest: (state) => {
       state.contractState.loading = true;
       state.contractState.done = false;
       state.contractState.error = null;
@@ -50,7 +51,7 @@ const ethSlice = createSlice({
       state.initialized = true;
     },
 
-    loadCampaignContractRequest: state => {
+    loadCampaignContractRequest: (state) => {
       state.contractState.loading = true;
       state.contractState.done = false;
       state.contractState.error = null;
@@ -68,61 +69,73 @@ const ethSlice = createSlice({
     saveCampaigns: (state, { payload: campaigns }) => {
       state.campaigns = campaigns;
     },
-
     addCampaign: (state, { payload: campaign }) => {
       state.campaigns.unshift(campaign);
-    }
-  }
+    },
+    setCurrentAccount: (state, { payload: account }) => {
+      state.currentAccount = account;
+    },
+    clearCampaignContract: (state) => {
+      state.contractInstance.campaignContract = null
+    },
+  },
 });
 
-const selectFactoryContract = createSelector(
-  state => state.contractInstance.factoryContract,
-
-  contract => contract
-);
-
 const selectCampaignContract = createSelector(
-  state => state.contractInstance.campaignContract,
+  (state) => state.contractInstance.campaignContract,
 
-  contract => contract
+  (contract) => contract
 );
 
 const selectWeb3 = createSelector(
-  state => state.web3Instance,
+  (state) => state.web3Instance,
 
-  web3 => web3
+  (web3) => web3
 );
 
 const selectAll = createSelector(
-  state => state.initialized,
-  state => state.web3Instance,
-  state => state.contractInstance.factoryContract,
+  (state) => state.initialized,
+  (state) => state.web3Instance,
+  (state) => state.contractInstance.factoryContract,
 
   (initialized, web3, factoryContract) => {
     return { initialized, web3, factoryContract };
   }
 );
 
-const selectInitialized = createSelector(
-  state => state.initialized,
+const selectFactoryContract = createSelector(
+  (state) => state.contractInstance.factoryContract,
 
-  initialized => initialized
+  (factoryContract) => factoryContract
+);
+
+const selectInitialized = createSelector(
+  (state) => state.initialized,
+
+  (initialized) => initialized
 );
 
 const selectCampaigns = createSelector(
-  state => state.campaigns,
+  (state) => state.campaigns,
 
-  campaigns => campaigns
+  (campaigns) => campaigns
+);
+
+const selectCurrentAccount = createSelector(
+  (state) => state.currentAccount,
+
+  (currentAccount) => currentAccount
 );
 
 export const ethActions = ethSlice.actions;
 export const ethReducer = ethSlice.reducer;
 export const ETH = ethSlice.name;
 export const ethSelector = {
-  factoryContract: state => selectFactoryContract(state[ETH]),
-  web3: state => selectWeb3(state[ETH]),
-  all: state => selectAll(state[ETH]),
-  initialized: state => selectInitialized(state[ETH]),
-  campaigns: state => selectCampaigns(state[ETH]),
-  campaignContract: state => selectCampaignContract(state[ETH])
+  factoryContract: (state) => selectFactoryContract(state[ETH]),
+  web3: (state) => selectWeb3(state[ETH]),
+  all: (state) => selectAll(state[ETH]),
+  initialized: (state) => selectInitialized(state[ETH]),
+  campaigns: (state) => selectCampaigns(state[ETH]),
+  campaignContract: (state) => selectCampaignContract(state[ETH]),
+  currentAccount: (state) => selectCurrentAccount(state[ETH]),
 };

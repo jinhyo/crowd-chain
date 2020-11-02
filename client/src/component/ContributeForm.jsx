@@ -7,21 +7,24 @@ function ContributeForm({
   web3,
   campaignContract,
   minimumContribution,
-  history
 }) {
   const [errorMessage, setErrorMessage] = useInput("");
   const [contributionAmount, setContributionAmount] = useInput("");
   const [loading, setLoading] = useInput(false);
+  console.log("contributionAmount", contributionAmount);
+  console.log("minimumContribution", minimumContribution);
 
   const onClickSubmit = useCallback(
-    async e => {
+    async (e) => {
       e.preventDefault();
       setLoading(true);
       setErrorMessage("");
 
-      if (!contributionAmount) {
+      if (contributionAmount < minimumContribution) {
         setLoading(false);
-        return setErrorMessage("최소 펀딩 금액을 입력하세요.");
+        return setErrorMessage(
+          `최소 펀딩금액은 ${minimumContribution}ETH 입니다.`
+        );
       }
 
       try {
@@ -36,8 +39,12 @@ function ContributeForm({
       }
       setLoading(false);
     },
-    [contributionAmount, web3, address]
+    [contributionAmount, minimumContribution, web3, address]
   );
+
+  const handleContributionInpu = useCallback((e) => {
+    setContributionAmount(e.target.value);
+  }, []);
 
   return (
     <>
@@ -60,11 +67,11 @@ function ContributeForm({
                 ></Button>
               }
               value={contributionAmount}
-              onChange={e => setContributionAmount(e.target.value)}
+              onChange={handleContributionInpu}
             />
           </span>
         </Form.Field>
-        <Message error header="Error!" content={errorMessage} />
+        <Message error header={errorMessage} />
       </Form>
     </>
   );

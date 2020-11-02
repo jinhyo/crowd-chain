@@ -51,29 +51,10 @@ function* web3RequestWatcher() {
   yield takeLatest(ethActions.loadWeb3Request, web3Hanlder);
 }
 
-async function getCampaigns(campaignFactory) {
-  return await campaignFactory.methods.getTotalCampaigns().call();
-}
-
-function* saveCampaignsHanlder({ payload: campaignFactory }) {
-  try {
-    const campaigns = yield call(getCampaigns, campaignFactory);
-    yield put(ethActions.saveCampaigns(campaigns));
-  } catch (error) {
-    console.error(error);
-    yield put();
-  }
-}
-
-function* RequestCampaignsWatcher() {
-  yield takeLatest(ethActions.loadFactoryContractSuccess, saveCampaignsHanlder);
-}
-
 export default function* ethSaga() {
   yield all([
     fork(web3RequestWatcher),
     fork(facotryContractRequestWatcher),
-    fork(RequestCampaignsWatcher),
-    fork(RequestCampaignContractWatcher)
+    fork(RequestCampaignContractWatcher),
   ]);
 }

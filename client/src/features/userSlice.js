@@ -6,6 +6,7 @@ const userSlice = createSlice({
     loginUser: null,
     userLoading: true,
   },
+
   reducers: {
     setLoginUser: (state, { payload: loginUser }) => {
       state.loginUser = loginUser;

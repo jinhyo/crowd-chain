@@ -1,92 +1,142 @@
-import React, { useEffect } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
+import { useParams } from "react-router-dom";
 import Layout from "./Layout";
 import { ethSelector, ethActions } from "../features/ethSlice";
-import { Grid, Card, Button } from "semantic-ui-react";
+import {
+  Grid,
+  Card,
+  Button,
+  Message,
+  Image,
+  Divider,
+  Header,
+  Segment,
+} from "semantic-ui-react";
 import ContributeForm from "./ContributeForm";
 import useInput from "../hooks/useInput";
 import UseFundingButton from "./UseFundingButton";
 import { Link } from "react-router-dom";
+import firebaseFuntions from "../firebase";
+import ContentsLoading from "./ContentsLoading";
 
-function Campaign({ match, history }) {
-  const address = match.params.address;
+function Campaign() {
+  const { address } = useParams();
   const dispatch = useDispatch();
 
   const { initialized, web3 } = useSelector(ethSelector.all);
   const campaignContract = useSelector(ethSelector.campaignContract);
 
-  const [minimumContribution, setMinimumContribution] = useInput("");
-  const [balance, setBalance] = useInput("");
-  const [requestCounts, setRequestCounts] = useInput("");
-  const [approveCounts, setApproveCounts] = useInput("");
-  const [topic, setTopic] = useInput("");
-  const [owner, setOwner] = useInput("");
-  const [contractDone, setContractDone] = useInput(false);
+  const [detailedInfos, setDetailedInfos] = useState({
+    minimumContribution: "",
+    balance: "",
+    requestCounts: "",
+    approveCounts: "",
+    owner: "",
+    createdAt: "",
+    description: "",
+    managerNickname: "",
+    name: "",
+    pictureURL: "",
+  });
 
-  console.log("topic", decodeURIComponent(topic));
+  // const [contractDone, setContractDone] = useInput(false);
 
   useEffect(() => {
-    if (initialized && !contractDone) {
+    if (initialized /* && !contractDone */) {
       dispatch(ethActions.loadCampaignContractRequest({ web3, address }));
-      setContractDone(true);
+      // setContractDone(true);
     }
 
+    return () => {
+      dispatch(ethActions.clearCampaignContract());
+    };
+  }, [initialized, address, web3]);
+
+  useEffect(() => {
     if (campaignContract) {
-      async function getSummary() {
-        const summary = await campaignContract.methods.getSummary().call();
-        console.log("getSummary", summary);
-        setMinimumContribution(web3.utils.fromWei(summary[0]));
-        setBalance(web3.utils.fromWei(summary[1]));
-        setRequestCounts(summary[2]);
-        setApproveCounts(summary[3]);
-        setTopic(summary[5]);
-        setOwner(summary[4]);
-      }
-      getSummary();
+      getSummary(campaignContract);
     }
-  }, [campaignContract, initialized, address]);
+  }, [campaignContract]);
 
   useEffect(() => {
     if (campaignContract) {
       campaignContract.events
         .Contribute()
         .on("data", (event) => {
-          setBalance(web3.utils.fromWei(event.returnValues[0]));
-          setApproveCounts(event.returnValues[1]);
+          setDetailedInfos((prev) => ({
+            ...prev,
+            approveCounts: event.returnValues[1],
+            balance: event.returnValues[0],
+          }));
           console.log("event", event);
         })
         .on("error", (error) => console.error(error));
     }
   }, [campaignContract, address]);
 
-  const renderCampaignDetails = () => {
-    return (
+  const getSummary = useCallback(
+    async (campaignContract) => {
+      const summary = await campaignContract.methods.getSummary().call();
+      const {
+        createdAt,
+        description,
+        managerNickname,
+        name,
+        pictureURL,
+      } = await firebaseFuntions.getProjectDetail(summary[6]);
+      const time = createdAt.toDate();
+
+      setDetailedInfos((prev) => ({
+        ...prev,
+        minimumContribution: web3.utils.fromWei(summary[0]),
+        balance: web3.utils.fromWei(summary[1]),
+        requestCounts: summary[2],
+        approveCounts: summary[3],
+        owner: summary[4],
+        createdAt:
+          time.getFullYear() + "-" + time.getMonth() + "-" + time.getDate(),
+        description,
+        managerNickname,
+        name,
+        pictureURL,
+      }));
+    },
+    [web3]
+  );
+
+  const renderCampaignDetails = useCallback(
+    () => (
       <Card.Group>
-        <Card fluid color="red" style={{ overflowWrap: "break-word" }}>
+        <Card>
+          <Image src={detailedInfos.pictureURL} wrapped />
+        </Card>
+        <Card color="red" fluid style={{ overflowWrap: "break-word" }}>
           <Card.Content>
-            <UseFundingButton address={address} />
-            <Card.Header>{owner}</Card.Header>
+            <Card.Header as="h2">{detailedInfos.name}</Card.Header>
+            <Card.Content>{detailedInfos.description}</Card.Content>
+            <Card.Meta textAlign="right">
+              생성일: {detailedInfos.createdAt}
+            </Card.Meta>
+          </Card.Content>
+        </Card>
+
+        <Card color="blue">
+          <Card.Content>
+            <Card.Header>{detailedInfos.managerNickname}</Card.Header>
             <Card.Meta>프로젝트 메니저</Card.Meta>
           </Card.Content>
         </Card>
-
         <Card color="blue">
           <Card.Content>
-            <Card.Header>{decodeURIComponent(topic)}</Card.Header>
-            <Card.Meta>프로젝트 분야</Card.Meta>
-          </Card.Content>
-        </Card>
-
-        <Card color="blue">
-          <Card.Content>
-            <Card.Header>{minimumContribution} ETH</Card.Header>
+            <Card.Header>{detailedInfos.minimumContribution} ETH</Card.Header>
             <Card.Meta>최소 펀딩금액</Card.Meta>
           </Card.Content>
         </Card>
 
         <Card color="blue">
           <Card.Content>
-            <Link to={`/campaigns/${address}/total-funding`}>
+            <Link to={`/campaigns/${detailedInfos.address}/total-funding`}>
               <Button
                 color="instagram"
                 size="tiny"
@@ -94,14 +144,14 @@ function Campaign({ match, history }) {
                 content="상세보기"
               />
             </Link>
-            <Card.Header>{balance} ETH</Card.Header>
+            <Card.Header>{detailedInfos.balance} ETH</Card.Header>
             <Card.Meta>총 펀딩금액</Card.Meta>
           </Card.Content>
         </Card>
 
         <Card color="blue">
           <Card.Content>
-            <Link to={`/campaigns/${address}/contributors`}>
+            <Link to={`/campaigns/${detailedInfos.address}/contributors`}>
               <Button
                 color="instagram"
                 size="tiny"
@@ -110,14 +160,14 @@ function Campaign({ match, history }) {
               />
             </Link>
 
-            <Card.Header>{approveCounts} 명</Card.Header>
+            <Card.Header>{detailedInfos.approveCounts} 명</Card.Header>
             <Card.Meta>참여자</Card.Meta>
           </Card.Content>
         </Card>
 
         <Card color="blue">
           <Card.Content>
-            <Link to={`/campaigns/${address}/usage`}>
+            <Link to={`/campaigns/${detailedInfos.address}/usage`}>
               <Button
                 size="tiny"
                 color="instagram"
@@ -126,18 +176,21 @@ function Campaign({ match, history }) {
               />
             </Link>
 
-            <Card.Header>{requestCounts}</Card.Header>
+            <Card.Header>{detailedInfos.requestCounts}</Card.Header>
             <Card.Meta>펀딩 사용처</Card.Meta>
           </Card.Content>
         </Card>
       </Card.Group>
-    );
-  };
+    ),
+    [detailedInfos]
+  );
 
   const { Row, Column } = Grid;
   return (
     <Layout>
-      <h3>켐페인 세부사항</h3>
+      <Segment basic>
+        <Header as="h2">프로젝트 세부사항</Header>
+      </Segment>
       <Grid divided>
         <Row>
           <Column width={11}>
@@ -148,9 +201,9 @@ function Campaign({ match, history }) {
               web3={web3}
               campaignContract={campaignContract}
               address={address}
-              minimumContribution={minimumContribution}
-              history={history}
+              minimumContribution={detailedInfos.minimumContribution}
             />
+            <UseFundingButton address={detailedInfos.address} />
           </Column>
         </Row>
       </Grid>

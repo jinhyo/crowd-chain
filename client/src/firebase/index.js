@@ -11,6 +11,7 @@ class Firebase {
     this.auth = firebase.auth();
     this.db = firebase.firestore();
     this.storage = firebase.storage();
+    this.fieldValue = firebase.firestore.FieldValue;
   }
 
   async googleLogin() {
@@ -24,6 +25,8 @@ class Firebase {
       id: user.uid,
       nickname: user.displayName,
       avatarURL: user.photoURL,
+      projectsICreated: [],
+      projectsIJoined: [],
     });
   }
 
@@ -48,6 +51,48 @@ class Firebase {
   async logOut() {
     this.auth.signOut();
     window.location.reload();
+  }
+
+  async getCampaignInfos() {
+    const projectSnap = await this.db
+      .collection("projects")
+      .orderBy("createdAt", "desc")
+      .get();
+
+    const projects = [];
+    projectSnap.forEach((campaign) => {
+      projects.push(campaign.data());
+    });
+    console.log("projects,projects", projects);
+
+    return projects;
+  }
+
+  async createProject(projectInfo) {
+    console.log("projectInfo", projectInfo);
+    await this.db
+      .collection("projects")
+      .doc(projectInfo.address)
+      .set(projectInfo);
+
+    await this.db
+      .collection("users")
+      .doc(this.auth.currentUser.uid)
+      .update({
+        projectICreated: this.fieldValue.arrayUnion(projectInfo.address),
+      });
+  }
+
+  async getProjectDetail(projectAddress) {
+    console.log("projectAddress", projectAddress);
+    const projectSnap = await this.db
+      .collection("projects")
+      .doc(projectAddress)
+      .get();
+
+    const projectDetails = projectSnap.data();
+
+    return projectDetails;
   }
 }
 
