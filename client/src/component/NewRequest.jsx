@@ -33,7 +33,7 @@ function NewRequest({ match, history }) {
   }, [initialized, address]);
 
   const onClickSubmit = useCallback(
-    async e => {
+    async (e) => {
       e.preventDefault();
       setLoading(true);
       setErrorMessage("");
@@ -73,12 +73,12 @@ function NewRequest({ match, history }) {
     { key: "buy", text: "구매", value: "buy" },
     { key: "employ", text: "고용", value: "employ" },
     { key: "outsource", text: "외주", value: "outsource" },
-    { key: "ets", text: "기타", value: "ets" }
+    { key: "ets", text: "기타", value: "ets" },
   ];
 
   const options2 = [
     { key: "ether", text: "ETHER", value: "ether" },
-    { key: "gwei", text: "GWEI", value: "gwei" }
+    { key: "gwei", text: "GWEI", value: "gwei" },
   ];
 
   return (
@@ -94,13 +94,13 @@ function NewRequest({ match, history }) {
                 floating
                 options={options1}
                 defaultValue="buy"
-                onChange={e => console.log(e.target)}
+                onChange={(e) => console.log(e.target.value)}
               />
             }
             label="사용 내역"
             labelPosition="left"
             value={description}
-            onChange={e => setDescription(e.target.value)}
+            onChange={(e) => setDescription(e.target.value)}
           />
 
           <p />
@@ -112,13 +112,13 @@ function NewRequest({ match, history }) {
                 floating
                 options={options2}
                 defaultValue="ether"
-                onSelect={e => setRecipient(e.target.value)}
+                onSelect={(e) => setRecipient(e.target.value)}
               />
             }
             label="필요 액수"
             labelPosition="left"
             value={etherAmount}
-            onChange={e => setEtherAmount(e.target.value)}
+            onChange={(e) => setEtherAmount(e.target.value)}
           />
           <p />
           <Input
@@ -126,7 +126,7 @@ function NewRequest({ match, history }) {
             labelPosition="left"
             placeholder="지갑 주소: 0xab..."
             value={recipient}
-            onChange={e => setRecipient(e.target.value)}
+            onChange={(e) => setRecipient(e.target.value)}
           />
         </Form.Field>
         <Message error header="Error!" content={errorMessage} />

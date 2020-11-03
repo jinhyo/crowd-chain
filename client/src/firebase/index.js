@@ -94,6 +94,21 @@ class Firebase {
 
     return projectDetails;
   }
+
+  async contribute(projectAddress, participantID, contributionAmount) {
+    await this.db
+      .collection("projects")
+      .doc(projectAddress)
+      .update({
+        participants: this.fieldValue.arrayUnion(participantID),
+        totalContribution: this.fieldValue.increment(contributionAmount),
+      });
+
+    await this.db
+      .collection("users")
+      .doc(this.auth.currentUser.uid)
+      .update({ projectsIJoined: this.fieldValue.arrayUnion(participantID) });
+  }
 }
 
 const firebaseFuntions = new Firebase();

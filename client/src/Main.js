@@ -10,6 +10,8 @@ import ContentsLoading from "./component/ContentsLoading";
 function Main() {
   const dispatch = useDispatch();
 
+  const { web3 } = useSelector(ethSelector.all);
+
   const [campaignInfos, setCampaignInfos] = useState([]);
   const [campaignLoading, setCampaignLoading] = useState(false);
 
@@ -66,14 +68,16 @@ function Main() {
                 </div>
                 <div>
                   <Icon name="ethereum" />
-                  모금액: {campaign.totalContribution} ETH
+                  모금액:{" "}
+                  {web3.utils.fromWei(campaign.totalContribution.toString())}
+                  ETH
                 </div>
               </Card.Content>
             </Card>
           </Grid.Column>
         );
       }),
-    [campaignInfos]
+    [campaignInfos, web3]
   );
 
   return (

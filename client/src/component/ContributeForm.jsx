@@ -1,21 +1,30 @@
 import React, { useCallback } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import useInput from "../hooks/useInput";
 import { Form, Input, Button, Message, Icon } from "semantic-ui-react";
+import { ethSelector } from "../features/ethSlice";
+import { userSelector } from "../features/userSlice";
+import firebaseFuntions from "../firebase";
 
 function ContributeForm({
   address,
   web3,
-  campaignContract,
   minimumContribution,
+  campaignContract,
 }) {
+  const loginUserID = useSelector(userSelector.loginUserID);
+
   const [errorMessage, setErrorMessage] = useInput("");
   const [contributionAmount, setContributionAmount] = useInput("");
   const [loading, setLoading] = useInput(false);
   console.log("contributionAmount", contributionAmount);
-  console.log("minimumContribution", minimumContribution);
 
   const onClickSubmit = useCallback(
     async (e) => {
+      if (!loginUserID) {
+        return alert("로그인이 필요합니다.");
+      }
+
       e.preventDefault();
       setLoading(true);
       setErrorMessage("");
@@ -31,20 +40,30 @@ function ContributeForm({
         const [account] = await web3.eth.getAccounts();
         const contributionAmountWei = web3.utils.toWei(contributionAmount);
         await campaignContract.methods
-          .contribute()
+          .contribute(loginUserID)
           .send({ from: account, value: contributionAmountWei, to: address });
+
+        await firebaseFuntions.contribute(
+          address,
+          loginUserID,
+          contributionAmountWei
+        );
+
         setContributionAmount("");
       } catch (error) {
         setErrorMessage(error.message);
       }
       setLoading(false);
     },
-    [contributionAmount, minimumContribution, web3, address]
+    [
+      contributionAmount,
+      minimumContribution,
+      web3,
+      address,
+      loginUserID,
+      campaignContract,
+    ]
   );
-
-  const handleContributionInpu = useCallback((e) => {
-    setContributionAmount(e.target.value);
-  }, []);
 
   return (
     <>
@@ -67,7 +86,7 @@ function ContributeForm({
                 ></Button>
               }
               value={contributionAmount}
-              onChange={handleContributionInpu}
+              onChange={(e) => setContributionAmount(e.target.value)}
             />
           </span>
         </Form.Field>

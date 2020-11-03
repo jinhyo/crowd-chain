@@ -53,8 +53,8 @@ contract Campaign {
     event Contribute(
         uint256 balance,
         uint256 approveCounts,
-        string approverID,
-        address approverAddress
+        string indexed approverID,
+        address indexed approverAddress
     );
     event Request(
         string description,
@@ -78,24 +78,34 @@ contract Campaign {
         return minimumContribution;
     }
 
-    function contribute(string memory _approverID, address _approverAddress)
-        public
-        payable
-    {
+    function contribute(string memory _approverID) public payable {
         require(
             msg.value >= minimumContribution,
             "donation must be more than the minimumContribution"
         );
         if (approvers[_approverID].length < 1) {
             approveCounts++;
-            approvers[_approverID].push(_approverAddress);
+            approvers[_approverID].push(msg.sender);
+        } else {
+            // 다른 계좌를 사용했을 경우에는 계좌 추가
+            address[] storage approverAccounts = approvers[_approverID];
+            bool isNew = true;
+            for (uint256 i = 0; i < approverAccounts.length; i++) {
+                if (approverAccounts[i] == msg.sender) {
+                    isNew = false;
+                }
+            }
+
+            if (isNew == true) {
+                approvers[_approverID].push(msg.sender);
+            }
         }
 
         emit Contribute(
             address(this).balance,
             approveCounts,
             _approverID,
-            _approverAddress
+            msg.sender
         );
     }
 

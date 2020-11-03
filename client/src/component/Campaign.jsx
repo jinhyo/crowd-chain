@@ -14,11 +14,10 @@ import {
   Segment,
 } from "semantic-ui-react";
 import ContributeForm from "./ContributeForm";
-import useInput from "../hooks/useInput";
 import UseFundingButton from "./UseFundingButton";
 import { Link } from "react-router-dom";
 import firebaseFuntions from "../firebase";
-import ContentsLoading from "./ContentsLoading";
+import { userSelector } from "../features/userSlice";
 
 function Campaign() {
   const { address } = useParams();
@@ -26,6 +25,7 @@ function Campaign() {
 
   const { initialized, web3 } = useSelector(ethSelector.all);
   const campaignContract = useSelector(ethSelector.campaignContract);
+  const loginUserID = useSelector(userSelector.loginUserID);
 
   const [detailedInfos, setDetailedInfos] = useState({
     minimumContribution: "",
@@ -38,14 +38,14 @@ function Campaign() {
     managerNickname: "",
     name: "",
     pictureURL: "",
+    managerID: "",
   });
 
-  // const [contractDone, setContractDone] = useInput(false);
+  console.log("detailedInfos", detailedInfos);
 
   useEffect(() => {
-    if (initialized /* && !contractDone */) {
+    if (initialized) {
       dispatch(ethActions.loadCampaignContractRequest({ web3, address }));
-      // setContractDone(true);
     }
 
     return () => {
@@ -59,6 +59,7 @@ function Campaign() {
     }
   }, [campaignContract]);
 
+  // 펀딩 이벤트
   useEffect(() => {
     if (campaignContract) {
       campaignContract.events
@@ -67,14 +68,15 @@ function Campaign() {
           setDetailedInfos((prev) => ({
             ...prev,
             approveCounts: event.returnValues[1],
-            balance: event.returnValues[0],
+            balance: web3.utils.fromWei(event.returnValues[0]),
           }));
           console.log("event", event);
         })
         .on("error", (error) => console.error(error));
     }
-  }, [campaignContract, address]);
+  }, [campaignContract, address, web3]);
 
+  // 프로젝트 정보 가져오기
   const getSummary = useCallback(
     async (campaignContract) => {
       const summary = await campaignContract.methods.getSummary().call();
@@ -84,6 +86,7 @@ function Campaign() {
         managerNickname,
         name,
         pictureURL,
+        managerID,
       } = await firebaseFuntions.getProjectDetail(summary[6]);
       const time = createdAt.toDate();
 
@@ -100,6 +103,7 @@ function Campaign() {
         managerNickname,
         name,
         pictureURL,
+        managerID,
       }));
     },
     [web3]
@@ -127,6 +131,7 @@ function Campaign() {
             <Card.Meta>프로젝트 메니저</Card.Meta>
           </Card.Content>
         </Card>
+
         <Card color="blue">
           <Card.Content>
             <Card.Header>{detailedInfos.minimumContribution} ETH</Card.Header>
@@ -151,23 +156,7 @@ function Campaign() {
 
         <Card color="blue">
           <Card.Content>
-            <Link to={`/campaigns/${detailedInfos.address}/contributors`}>
-              <Button
-                color="instagram"
-                size="tiny"
-                floated="right"
-                content="상세보기"
-              />
-            </Link>
-
-            <Card.Header>{detailedInfos.approveCounts} 명</Card.Header>
-            <Card.Meta>참여자</Card.Meta>
-          </Card.Content>
-        </Card>
-
-        <Card color="blue">
-          <Card.Content>
-            <Link to={`/campaigns/${detailedInfos.address}/usage`}>
+            <Link to={`/campaigns/${address}/usage`}>
               <Button
                 size="tiny"
                 color="instagram"
@@ -180,9 +169,16 @@ function Campaign() {
             <Card.Meta>펀딩 사용처</Card.Meta>
           </Card.Content>
         </Card>
+
+        <Card color="blue">
+          <Card.Content>
+            <Card.Header>{detailedInfos.approveCounts} 명</Card.Header>
+            <Card.Meta>참여자</Card.Meta>
+          </Card.Content>
+        </Card>
       </Card.Group>
     ),
-    [detailedInfos]
+    [detailedInfos, address]
   );
 
   const { Row, Column } = Grid;
@@ -199,11 +195,13 @@ function Campaign() {
           <Column width={5}>
             <ContributeForm
               web3={web3}
-              campaignContract={campaignContract}
               address={address}
               minimumContribution={detailedInfos.minimumContribution}
+              campaignContract={campaignContract}
             />
-            <UseFundingButton address={detailedInfos.address} />
+            {loginUserID === detailedInfos.managerID && (
+              <UseFundingButton address={address} />
+            )}
           </Column>
         </Row>
       </Grid>

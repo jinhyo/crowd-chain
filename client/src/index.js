@@ -10,7 +10,6 @@ import Campaign from "./component/Campaign";
 import NewCampaign from "./component/NewCampaign";
 import NewRequest from "./component/NewRequest";
 import TotalFunding from "./component/TotalFunding";
-import Contributors from "./component/Contributors";
 import Usage from "./component/Usage";
 import Login from "./component/Login";
 import { userActions, userSelector } from "./features/userSlice";
@@ -71,7 +70,6 @@ function Index() {
         path="/campaigns/:address/total-funding"
         component={TotalFunding}
       />
-      <Route path="/campaigns/:address/contributors" component={Contributors} />
       <Route path="/campaigns/:address/usage" component={Usage} />
     </Router>
   );
