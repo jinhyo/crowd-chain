@@ -8,7 +8,7 @@ function RequestRow({
   web3,
   request,
   contributorsCount,
-  campaignContract
+  campaignContract,
 }) {
   const { Row, Cell } = Table;
   const approveReady = request.approvalCounts > parseInt(contributorsCount / 2);
@@ -19,7 +19,7 @@ function RequestRow({
       warning={approveReady && !request.complete}
     >
       <Cell textAlign="center">{id + 1}</Cell>
-      <Cell>{request.description}</Cell>
+      <Cell>{decodeURIComponent(request.description)}</Cell>
       <Cell>{web3.utils.fromWei(request.value)} Ether</Cell>
       <Cell>{request.recipient}</Cell>
       <Cell textAlign="center">

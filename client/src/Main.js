@@ -69,7 +69,8 @@ function Main() {
                 <div>
                   <Icon name="ethereum" />
                   모금액:{" "}
-                  {web3.utils.fromWei(campaign.totalContribution.toString())}
+                  {web3 &&
+                    web3.utils.fromWei(campaign.totalContribution.toString())}
                   ETH
                 </div>
               </Card.Content>

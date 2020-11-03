@@ -35,11 +35,13 @@ class Firebase {
   }
 
   async getLoginUser(user) {
-    const userData = {
-      id: user.uid,
-      nickname: user.displayName,
-      avatarURL: user.photoURL,
-    };
+    const userSnap = await this.db.collection("users").doc(user.uid).get();
+    const userData = userSnap.data();
+    // const userData = {
+    //   id: user.uid,
+    //   nickname: user.displayName,
+    //   avatarURL: user.photoURL,
+    // };
 
     return userData;
   }
@@ -50,7 +52,6 @@ class Firebase {
 
   async logOut() {
     this.auth.signOut();
-    window.location.reload();
   }
 
   async getCampaignInfos() {

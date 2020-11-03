@@ -34,7 +34,7 @@ function Login() {
   const handleSubmit = useCallback(async () => {
     try {
       setLoginLoading(true);
-      await firebaseFuntions.logIn(initialState.email, initialState.password);
+      await firebaseFuntions.login(initialState.email, initialState.password);
       setLoginLoading(false);
       history.push("/");
     } catch (error) {

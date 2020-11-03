@@ -1,12 +1,17 @@
-import React from "react";
+import React, { useCallback } from "react";
 import { Button, Divider } from "semantic-ui-react";
 import { Link } from "react-router-dom";
 
-function UseFundingButton({ address }) {
+function UseFundingButton({ address, managerAccount }) {
   return (
     <>
       <Divider />
-      <Link to={`/new/request/${address}`}>
+      <Link
+        to={{
+          pathname: `/new/request/${address}`,
+          state: { managerAccount },
+        }}
+      >
         <Button fluid style={{ marginBottom: "10px" }} primary size="medium">
           <p>펀딩 사용 요청</p>
         </Button>

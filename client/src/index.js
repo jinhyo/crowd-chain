@@ -32,7 +32,9 @@ function Index() {
       console.log("accounts", accounts[0]);
     });
 
-    // alert("현재 채널 아이디는 " + window.ethereum.chainId + "입니다.");
+    // if (window.ethereum.chainId !== "0x4") {
+    //   alert("네트워크를 Rinkeby 테스트넷으로 설정해 주세요.");
+    // }
   }, []);
 
   // 로그인 유저 체크 & 가져오기

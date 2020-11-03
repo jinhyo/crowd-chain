@@ -1,17 +1,34 @@
 import React, { useCallback, useState, useEffect } from "react";
-
 import { useSelector, useDispatch } from "react-redux";
+import { useLocation, useParams, useHistory } from "react-router-dom";
 import Layout from "./Layout";
 import { ethSelector } from "../features/ethSlice";
 import useInput from "../hooks/useInput";
-import { Form, Input, Button, Message, Dropdown } from "semantic-ui-react";
+import {
+  Form,
+  Input,
+  Button,
+  Message,
+  GridColumn,
+  Grid,
+  Divider,
+  Header,
+  Segment,
+} from "semantic-ui-react";
 import { ethActions } from "../features/ethSlice";
+import { userSelector } from "../features/userSlice";
 
-function NewRequest({ match, history }) {
+function NewRequest() {
   const dispatch = useDispatch();
-  const address = match.params.address;
+  const history = useHistory();
+  const { address } = useParams();
+  const {
+    state: { managerAccount },
+  } = useLocation();
 
   const { initialized, web3 } = useSelector(ethSelector.all);
+  const currentAccount = useSelector(ethSelector.currentAccount);
+  const loginUserID = useSelector(userSelector.loginUserID);
   const campaignContract = useSelector(ethSelector.campaignContract);
 
   const [errorMessage, setErrorMessage] = useInput("");
@@ -35,6 +52,12 @@ function NewRequest({ match, history }) {
   const onClickSubmit = useCallback(
     async (e) => {
       e.preventDefault();
+      if (managerAccount.toUpperCase() !== currentAccount.toUpperCase()) {
+        return alert(
+          `프로젝트를 생성한 계정으로 설정해 주세요. => ${managerAccount}`
+        );
+      }
+
       setLoading(true);
       setErrorMessage("");
 
@@ -55,9 +78,15 @@ function NewRequest({ match, history }) {
         const weiAmount = web3.utils.toWei(etherAmount);
         const [account] = await web3.eth.getAccounts();
         console.log("account", account);
+        console.log("loginUserID", loginUserID);
 
         await campaignContract.methods
-          .createRequest(description, weiAmount, recipient)
+          .createRequest(
+            encodeURIComponent(description),
+            weiAmount,
+            recipient,
+            loginUserID
+          )
           .send({ from: account });
         setLoading(false);
         history.push(`/campaigns/${address}/usage`);
@@ -66,74 +95,60 @@ function NewRequest({ match, history }) {
         setLoading(false);
       }
     },
-    [description, etherAmount, recipient, campaignContract]
+    [
+      description,
+      etherAmount,
+      recipient,
+      campaignContract,
+      managerAccount,
+      currentAccount,
+      loginUserID,
+    ]
   );
-
-  const options1 = [
-    { key: "buy", text: "구매", value: "buy" },
-    { key: "employ", text: "고용", value: "employ" },
-    { key: "outsource", text: "외주", value: "outsource" },
-    { key: "ets", text: "기타", value: "ets" },
-  ];
-
-  const options2 = [
-    { key: "ether", text: "ETHER", value: "ether" },
-    { key: "gwei", text: "GWEI", value: "gwei" },
-  ];
 
   return (
     <Layout>
-      <h3>펀딩 사용 요청</h3>
-      <Form onSubmit={onClickSubmit} error={!!errorMessage}>
-        <Form.Field>
-          <Input
-            action={
-              <Dropdown
-                button
-                basic
-                floating
-                options={options1}
-                defaultValue="buy"
-                onChange={(e) => console.log(e.target.value)}
-              />
-            }
-            label="사용 내역"
-            labelPosition="left"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          />
+      <Grid textAlign="center" verticalAlign="middle">
+        <GridColumn width={10}>
+          <Divider hidden />
+          <Segment basic>
+            <Header as="h2">펀딩 사용 요청 </Header>
+          </Segment>
+          <Segment stacked>
+            <Form onSubmit={onClickSubmit} error={!!errorMessage}>
+              <Form.Field>
+                <Input
+                  label="사용 내역"
+                  labelPosition="left"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                />
 
-          <p />
-          <Input
-            action={
-              <Dropdown
-                button
-                basic
-                floating
-                options={options2}
-                defaultValue="ether"
-                onSelect={(e) => setRecipient(e.target.value)}
-              />
-            }
-            label="필요 액수"
-            labelPosition="left"
-            value={etherAmount}
-            onChange={(e) => setEtherAmount(e.target.value)}
-          />
-          <p />
-          <Input
-            label="지불 대상"
-            labelPosition="left"
-            placeholder="지갑 주소: 0xab..."
-            value={recipient}
-            onChange={(e) => setRecipient(e.target.value)}
-          />
-        </Form.Field>
-        <Message error header="Error!" content={errorMessage} />
-        <Button primary loading={loading}>
-          요청
-        </Button>
-      </Form>
+                <p />
+                <Input
+                  label="필요 액수"
+                  labelPosition="left"
+                  value={etherAmount}
+                  placeholder="ETH"
+                  onChange={(e) => setEtherAmount(e.target.value)}
+                />
+                <p />
+                <Input
+                  label="지불 대상"
+                  labelPosition="left"
+                  placeholder="지갑 주소: 0xab..."
+                  value={recipient}
+                  onChange={(e) => setRecipient(e.target.value)}
+                />
+              </Form.Field>
+              <Message error header={errorMessage} />
+              <Button primary loading={loading}>
+                요청
+              </Button>
+            </Form>
+          </Segment>
+        </GridColumn>
+      </Grid>
     </Layout>
   );
 }

@@ -12,6 +12,7 @@ import {
   Divider,
   Header,
   Segment,
+  Popup,
 } from "semantic-ui-react";
 import ContributeForm from "./ContributeForm";
 import UseFundingButton from "./UseFundingButton";
@@ -127,7 +128,14 @@ function Campaign() {
 
         <Card color="blue">
           <Card.Content>
-            <Card.Header>{detailedInfos.managerNickname}</Card.Header>
+            <Popup
+              hoverable
+              content={detailedInfos.owner}
+              trigger={
+                <Card.Header>{detailedInfos.managerNickname}</Card.Header>
+              }
+            />
+
             <Card.Meta>프로젝트 메니저</Card.Meta>
           </Card.Content>
         </Card>
@@ -156,7 +164,12 @@ function Campaign() {
 
         <Card color="blue">
           <Card.Content>
-            <Link to={`/campaigns/${address}/usage`}>
+            <Link
+              to={{
+                pathname: `/campaigns/${address}/usage`,
+                state: { managerAccount: detailedInfos.owner },
+              }}
+            >
               <Button
                 size="tiny"
                 color="instagram"
@@ -200,7 +213,10 @@ function Campaign() {
               campaignContract={campaignContract}
             />
             {loginUserID === detailedInfos.managerID && (
-              <UseFundingButton address={address} />
+              <UseFundingButton
+                address={address}
+                managerAccount={detailedInfos.owner}
+              />
             )}
           </Column>
         </Row>

@@ -1,5 +1,6 @@
 import React, { useEffect, useCallback, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
+import { useLocation } from "react-router-dom";
 import Layout from "./Layout";
 import { ethSelector, ethActions } from "../features/ethSlice";
 import { Grid, Card, Button, Table } from "semantic-ui-react";
@@ -11,6 +12,9 @@ import RequestRow from "./RequestRow";
 
 function Usage({ match }) {
   const address = match.params.address;
+  const {
+    state: { managerAccount },
+  } = useLocation();
   const dispatch = useDispatch();
 
   const { initialized, web3 } = useSelector(ethSelector.all);
@@ -79,7 +83,7 @@ function Usage({ match }) {
 
   return (
     <Layout>
-      <UseFundingButton address={address} />
+      <UseFundingButton address={address} managerAccount={managerAccount} />
       <h3>펀딩 사용내역</h3>
 
       <Table celled>

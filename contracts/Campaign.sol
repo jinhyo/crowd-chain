@@ -46,8 +46,7 @@ contract Campaign {
         uint256 approvalCounts;
         bool complete;
         address payable recipient;
-        mapping(address => bool) approvals;
-        mapping(string => bool) approvalIDs;
+        mapping(string => bool) approvals; // userID => bool
     }
 
     event Contribute(
@@ -127,15 +126,15 @@ contract Campaign {
         requests.push(newRequest);
     }
 
-    function approveRequest(uint256 _index, string memory _ownerID) public {
-        require(approvers[_ownerID].length > 0, "You are not a contributor");
+    function approveRequest(uint256 _index, string memory _approverID) public {
+        require(approvers[_approverID].length > 0, "You are not a contributor");
         RequestInfo storage request = requests[_index];
         require(
-            !request.approvals[msg.sender],
+            !request.approvals[_approverID],
             "You have aleady signed before"
         );
 
-        request.approvals[msg.sender] = true;
+        request.approvals[_approverID] = true;
         request.approvalCounts++;
     }
 
@@ -148,7 +147,7 @@ contract Campaign {
             request.approvalCounts > (approveCounts / 2),
             "Not enough approvals"
         );
-        require(!request.complete, "Thist request was completed");
+        require(!request.complete, "This request was completed");
 
         request.recipient.transfer(request.value);
         request.complete = true;

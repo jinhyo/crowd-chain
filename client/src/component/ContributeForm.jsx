@@ -52,8 +52,9 @@ function ContributeForm({
         setContributionAmount("");
       } catch (error) {
         setErrorMessage(error.message);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     },
     [
       contributionAmount,
