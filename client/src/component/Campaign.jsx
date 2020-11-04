@@ -212,6 +212,7 @@ function Campaign() {
               minimumContribution={detailedInfos.minimumContribution}
               campaignContract={campaignContract}
             />
+            <Divider hidden />
             {loginUserID === detailedInfos.managerID && (
               <UseFundingButton
                 address={address}

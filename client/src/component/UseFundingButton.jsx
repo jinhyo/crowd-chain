@@ -5,7 +5,6 @@ import { Link } from "react-router-dom";
 function UseFundingButton({ address, managerAccount }) {
   return (
     <>
-      <Divider />
       <Link
         to={{
           pathname: `/new/request/${address}`,

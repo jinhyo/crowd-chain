@@ -3,7 +3,14 @@ import { useSelector, useDispatch } from "react-redux";
 import { useLocation, useParams } from "react-router-dom";
 import Layout from "./Layout";
 import { ethSelector, ethActions } from "../features/ethSlice";
-import { Grid, Card, Button, Table } from "semantic-ui-react";
+import {
+  Grid,
+  Card,
+  Button,
+  Table,
+  GridColumn,
+  Divider,
+} from "semantic-ui-react";
 import ContributeForm from "./ContributeForm";
 import useInput from "../hooks/useInput";
 import UseFundingButton from "./UseFundingButton";
@@ -16,8 +23,6 @@ function Usage() {
     state: { managerAccount },
   } = useLocation();
   const dispatch = useDispatch();
-
-  console.log("managerAccount", managerAccount);
 
   const { initialized, web3 } = useSelector(ethSelector.all);
   const campaignContract = useSelector(ethSelector.campaignContract);
@@ -77,15 +82,21 @@ function Usage() {
 
   return (
     <Layout>
-      <UseFundingButton address={address} managerAccount={managerAccount} />
-      <h3>펀딩 사용내역</h3>
-
+      <Divider hidden />
+      <Grid>
+        <GridColumn floated="left" width={7}>
+          <Header as="h2">펀딩 사용내역</Header>
+        </GridColumn>
+        <GridColumn floated="right" width={3}>
+          <UseFundingButton address={address} managerAccount={managerAccount} />
+        </GridColumn>
+      </Grid>
       <Table celled>
         <Header>
           <Row textAlign="center">
             <HeaderCell>ID</HeaderCell>
             <HeaderCell>내역</HeaderCell>
-            <HeaderCell>지급 액수</HeaderCell>
+            <HeaderCell>요청 액수</HeaderCell>
             <HeaderCell>지급 대상</HeaderCell>
             <HeaderCell>승인 상태</HeaderCell>
             <HeaderCell>실행 유무</HeaderCell>
