@@ -20,7 +20,7 @@ class Firebase {
     provider.addScope("profile");
 
     const { user } = await this.auth.signInWithPopup(provider);
-    console.log("user", user);
+
     await this.db.collection("users").doc(user.uid).set({
       id: user.uid,
       nickname: user.displayName,
@@ -64,13 +64,11 @@ class Firebase {
     projectSnap.forEach((campaign) => {
       projects.push(campaign.data());
     });
-    console.log("projects,projects", projects);
 
     return projects;
   }
 
   async createProject(projectInfo) {
-    console.log("projectInfo", projectInfo);
     await this.db
       .collection("projects")
       .doc(projectInfo.address)
@@ -80,12 +78,11 @@ class Firebase {
       .collection("users")
       .doc(this.auth.currentUser.uid)
       .update({
-        projectICreated: this.fieldValue.arrayUnion(projectInfo.address),
+        projectsICreated: this.fieldValue.arrayUnion(projectInfo.address),
       });
   }
 
   async getProjectDetail(projectAddress) {
-    console.log("projectAddress", projectAddress);
     const projectSnap = await this.db
       .collection("projects")
       .doc(projectAddress)
@@ -108,7 +105,39 @@ class Firebase {
     await this.db
       .collection("users")
       .doc(this.auth.currentUser.uid)
-      .update({ projectsIJoined: this.fieldValue.arrayUnion(participantID) });
+      .update({ projectsIJoined: this.fieldValue.arrayUnion(projectAddress) });
+  }
+
+  async getUserInfo(userID) {
+    const userSnap = await this.db.collection("users").doc(userID).get();
+
+    const userData = userSnap.data();
+
+    return userData;
+  }
+
+  async getUserProjects() {
+    const userSnap = await this.db
+      .collection("users")
+      .doc(this.auth.currentUser.uid)
+      .get();
+    const userData = userSnap.data();
+
+    const projectsICreatedIDs = userData.projectsICreated;
+    const projectsIJoinedIDs = userData.projectsIJoined;
+
+    const projectsICreated = await Promise.all(
+      projectsICreatedIDs.map((id) => {
+        return this.getProjectDetail(id);
+      })
+    );
+    const projectsIJoined = await Promise.all(
+      projectsIJoinedIDs.map((id) => {
+        return this.getProjectDetail(id);
+      })
+    );
+
+    return { projectsICreated, projectsIJoined };
   }
 }
 

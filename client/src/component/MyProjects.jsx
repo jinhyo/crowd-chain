@@ -1,42 +1,56 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import Layout from "./component/Layout";
-import { Card, Button, Grid, Divider, Image, Icon } from "semantic-ui-react";
+import {
+  Card,
+  Button,
+  Grid,
+  Divider,
+  Image,
+  Icon,
+  Header,
+} from "semantic-ui-react";
 import { Link } from "react-router-dom";
-import { ethSelector } from "./features/ethSlice";
-import firebaseFuntions from "./firebase";
-import ContentsLoading from "./component/ContentsLoading";
+import ContentsLoading from "./ContentsLoading";
+import Layout from "./Layout";
+import { ethSelector } from "../features/ethSlice";
+import firebaseFuntions from "../firebase";
+import { userSelector } from "../features/userSlice";
 
 function Main() {
   const dispatch = useDispatch();
 
   const { web3 } = useSelector(ethSelector.all);
+  const loginUserID = useSelector(userSelector.loginUserID);
 
-  const [campaignInfos, setCampaignInfos] = useState([]);
-  const [campaignLoading, setCampaignLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [projectsICreated, setProjectsICreated] = useState([]);
+  const [projectsIJoined, setprojectsIJoined] = useState([]);
 
   useEffect(() => {
-    getCampaignInfos();
+    if (loginUserID) {
+      getUserProjects();
+    }
+  }, [loginUserID]);
 
-    return () => {
-      setCampaignInfos([]);
-    };
-  }, []);
-  async function getCampaignInfos() {
+  async function getUserProjects() {
     try {
-      setCampaignLoading(true);
-      const campaignInfos = await firebaseFuntions.getCampaignInfos();
-      setCampaignInfos(campaignInfos);
+      setLoading(true);
+      const {
+        projectsICreated,
+        projectsIJoined,
+      } = await firebaseFuntions.getUserProjects();
+      setProjectsICreated(projectsICreated);
+      setprojectsIJoined(projectsIJoined);
     } catch (error) {
       console.error(error);
     } finally {
-      setCampaignLoading(false);
+      setLoading(false);
     }
   }
 
   const renderCampaigns = useCallback(
-    () =>
-      campaignInfos.map((campaign) => {
+    (projects) =>
+      projects.map((campaign) => {
         const time = campaign.createdAt.toDate();
         return (
           <Grid.Column key={campaign.address} width={4}>
@@ -80,15 +94,23 @@ function Main() {
           </Grid.Column>
         );
       }),
-    [campaignInfos, web3]
+    [web3]
   );
 
   return (
     <Layout>
       <Divider hidden />
+      {loading && <ContentsLoading />}
+
+      <Header as="h2" content="나의 프로젝트" />
       <Grid stackable columns="equal" columns={4} divided padded>
-        {campaignInfos && renderCampaigns()}
-        {campaignLoading && <ContentsLoading />}
+        {projectsICreated && renderCampaigns(projectsICreated)}
+      </Grid>
+
+      <Header as="h2" content="참가중인 프로젝트" />
+      <Grid stackable columns="equal" columns={4} divided padded>
+        {projectsIJoined && renderCampaigns(projectsIJoined)}
+        {loading && <ContentsLoading />}
       </Grid>
     </Layout>
   );

@@ -60,23 +60,6 @@ function Campaign() {
     }
   }, [campaignContract]);
 
-  // 펀딩 이벤트
-  useEffect(() => {
-    if (campaignContract) {
-      campaignContract.events
-        .Contribute()
-        .on("data", (event) => {
-          setDetailedInfos((prev) => ({
-            ...prev,
-            approveCounts: event.returnValues[1],
-            balance: web3.utils.fromWei(event.returnValues[0]),
-          }));
-          console.log("event", event);
-        })
-        .on("error", (error) => console.error(error));
-    }
-  }, [campaignContract, address, web3]);
-
   // 프로젝트 정보 가져오기
   const getSummary = useCallback(
     async (campaignContract) => {
@@ -109,6 +92,23 @@ function Campaign() {
     },
     [web3]
   );
+
+  // Contribute event
+  useEffect(() => {
+    if (campaignContract) {
+      campaignContract.events
+        .Contribute()
+        .on("data", (event) => {
+          setDetailedInfos((prev) => ({
+            ...prev,
+            balance: web3.utils.fromWei(event.returnValues[0]),
+            approveCounts: event.returnValues[1],
+          }));
+          console.log("event", event);
+        })
+        .on("error", (error) => console.error(error));
+    }
+  }, [campaignContract, address]);
 
   const renderCampaignDetails = useCallback(
     () => (
@@ -149,7 +149,7 @@ function Campaign() {
 
         <Card color="blue">
           <Card.Content>
-            <Link to={`/campaigns/${detailedInfos.address}/total-funding`}>
+            <Link to={`/campaigns/${address}/total-funding`}>
               <Button
                 color="instagram"
                 size="tiny"
@@ -158,7 +158,7 @@ function Campaign() {
               />
             </Link>
             <Card.Header>{detailedInfos.balance} ETH</Card.Header>
-            <Card.Meta>총 펀딩금액</Card.Meta>
+            <Card.Meta>모금액</Card.Meta>
           </Card.Content>
         </Card>
 
@@ -191,7 +191,7 @@ function Campaign() {
         </Card>
       </Card.Group>
     ),
-    [detailedInfos, address]
+    [detailedInfos, address, campaignContract]
   );
 
   const { Row, Column } = Grid;

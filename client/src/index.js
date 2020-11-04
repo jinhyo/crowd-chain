@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import ReactDOM from "react-dom";
 import { Provider } from "react-redux";
-import { BrowserRouter as Router, Route } from "react-router-dom";
+import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 import store from "./store/configureStore";
 import { ethActions, ethSelector } from "./features/ethSlice";
 import "semantic-ui-css/semantic.min.css";
@@ -10,6 +10,7 @@ import Campaign from "./component/Campaign";
 import NewCampaign from "./component/NewCampaign";
 import NewRequest from "./component/NewRequest";
 import TotalFunding from "./component/TotalFunding";
+import MyProjects from "./component/MyProjects";
 import Usage from "./component/Usage";
 import Login from "./component/Login";
 import { userActions, userSelector } from "./features/userSlice";
@@ -62,17 +63,20 @@ function Index() {
   if (userLoading) return <Loading />;
   return (
     <Router>
-      <Route exact path="/" component={Main} />
-      <Route exact path="/login" component={Login} />
-      <Route path="/new/campaign" exact component={NewCampaign} />
-      <Route path="/new/request/:address" exact component={NewRequest} />
-      <Route exact path="/campaigns/:address" component={Campaign} />
-      <Route
-        exact
-        path="/campaigns/:address/total-funding"
-        component={TotalFunding}
-      />
-      <Route path="/campaigns/:address/usage" component={Usage} />
+      <Switch>
+        <Route exact path="/" component={Main} />
+        <Route exact path="/login" component={Login} />
+        <Route path="/new/campaign" exact component={NewCampaign} />
+        <Route path="/new/request/:address" exact component={NewRequest} />
+        <Route exact path="/campaigns/mine" component={MyProjects} />
+        <Route exact path="/campaigns/:address" component={Campaign} />
+        <Route
+          exact
+          path="/campaigns/:address/total-funding"
+          component={TotalFunding}
+        />
+        <Route path="/campaigns/:address/usage" component={Usage} />
+      </Switch>
     </Router>
   );
 }

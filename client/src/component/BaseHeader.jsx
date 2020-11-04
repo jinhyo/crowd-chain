@@ -30,7 +30,7 @@ function BaseHeader() {
         </Link>
         {loginUser ? (
           <>
-            <Link to="/public" className="item">
+            <Link to="/campaigns/mine" className="item">
               <p>나의 프로젝트</p>
             </Link>
             <Link to="/new/campaign" className="item">

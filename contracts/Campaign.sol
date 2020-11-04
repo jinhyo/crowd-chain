@@ -54,7 +54,7 @@ contract Campaign {
         uint256 balance,
         uint256 approveCounts,
         uint256 contributionAmount,
-        string indexed approverID,
+        string approverID,
         address indexed approverAddress
     );
 
@@ -105,7 +105,6 @@ contract Campaign {
         );
     }
 
-    
     function createRequest(
         string memory _description,
         uint256 _value,
@@ -181,5 +180,9 @@ contract Campaign {
 
     function getRequestCounts() public view returns (uint256) {
         return requests.length;
+    }
+
+    function getTotalBalance() public view returns (uint256) {
+        return address(this).balance;
     }
 }
