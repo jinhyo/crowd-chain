@@ -82,6 +82,19 @@ class Firebase {
       });
   }
 
+  async checkDuplicateName(name) {
+    const snap = await this.db
+      .collection("projects")
+      .where("name", "==", name)
+      .get();
+    let isAvailable = true;
+    if (!snap.empty) {
+      isAvailable = false;
+    }
+
+    return isAvailable;
+  }
+
   async getProjectDetail(projectAddress) {
     const projectSnap = await this.db
       .collection("projects")

@@ -63,6 +63,14 @@ function NewCampaign({ history }) {
       }
 
       try {
+        const isAvailable = await firebaseFuntions.checkDuplicateName(
+          input.topic
+        );
+
+        if (!isAvailable) {
+          setLoading(false);
+          return setErrorMessage("동일한 프로젝트명이 있습니다.");
+        }
         const minimumEther = web3.utils.toWei(input.minimumContribution);
         console.log("loginUser.id", loginUser.id);
 
