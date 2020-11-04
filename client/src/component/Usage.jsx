@@ -11,11 +11,9 @@ import {
   GridColumn,
   Divider,
 } from "semantic-ui-react";
-import ContributeForm from "./ContributeForm";
-import useInput from "../hooks/useInput";
 import UseFundingButton from "./UseFundingButton";
-import { Link } from "react-router-dom";
 import RequestRow from "./RequestRow";
+import { userSelector } from "../features/userSlice";
 
 function Usage() {
   const { address } = useParams();
@@ -24,12 +22,14 @@ function Usage() {
   } = useLocation();
   const dispatch = useDispatch();
 
+  const loginUserID = useSelector(userSelector.loginUserID);
   const { initialized, web3 } = useSelector(ethSelector.all);
   const campaignContract = useSelector(ethSelector.campaignContract);
   const requestCall = useSelector(ethSelector.requestCall);
 
   const [requests, setRequests] = useState([]);
   const [contributorsCount, setcontributorsCount] = useState("");
+  const [managerID, setManagerID] = useState("");
 
   useEffect(() => {
     if (initialized && !campaignContract) {
@@ -56,14 +56,19 @@ function Usage() {
           .fill()
           .map((r, index) => campaignContract.methods.requests(index).call())
       );
+
+      const managerID = await campaignContract.methods.ownerID().call();
+
+      console.log("managerID", managerID);
       console.log("requests", requests);
+      setManagerID(managerID);
       setRequests(requests);
     } catch (error) {
       console.error(error);
     }
   }
 
-  const renderRequests = () => {
+  const renderRequests = useCallback(() => {
     return requests.map((request, index) => {
       return (
         <RequestRow
@@ -76,7 +81,7 @@ function Usage() {
         />
       );
     });
-  };
+  }, [requests]);
 
   const { Header, Row, HeaderCell, Body } = Table;
 
@@ -88,7 +93,12 @@ function Usage() {
           <Header as="h2">펀딩 사용내역</Header>
         </GridColumn>
         <GridColumn floated="right" width={3}>
-          <UseFundingButton address={address} managerAccount={managerAccount} />
+          {loginUserID === managerID && (
+            <UseFundingButton
+              address={address}
+              managerAccount={managerAccount}
+            />
+          )}
         </GridColumn>
       </Grid>
       <Table celled>

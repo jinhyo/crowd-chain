@@ -1,7 +1,7 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Button, Label, Message } from "semantic-ui-react";
-import { ethActions } from "../features/ethSlice";
+import { ethActions, ethSelector } from "../features/ethSlice";
 import { userSelector } from "../features/userSlice";
 
 function ApproveButton({
@@ -10,14 +10,31 @@ function ApproveButton({
   contributorsCount,
   campaignContract,
   id,
-  web3,
+  contributors,
 }) {
   const dispatch = useDispatch();
-
+  console.log("request", request);
   const loginUserID = useSelector(userSelector.loginUserID);
+  const { web3 } = useSelector(ethSelector.all);
+
+  const [approveState, setApproveState] = useState(false);
+  console.log("approveState", approveState);
+
+  useEffect(() => {
+    if (campaignContract && loginUserID) {
+      getApproveState(campaignContract, id, loginUserID);
+    }
+  }, [campaignContract, id, loginUserID, request]);
+
+  function canIApprove(contributors, loginUserID) {
+    return contributors.includes(loginUserID);
+  }
 
   const approveRequest = useCallback(async () => {
     try {
+      if (!canIApprove(contributors, loginUserID)) {
+        return alert("참여자만 승인할 수 있습니다.");
+      }
       const [account] = await web3.eth.getAccounts();
       await campaignContract.methods
         .approveRequest(id, loginUserID)
@@ -27,12 +44,29 @@ function ApproveButton({
     } catch (error) {
       console.error(error);
     }
-  }, []);
+  }, [contributors, loginUserID]);
+
+  async function getApproveState(campaignContract, index, loginUserID) {
+    try {
+      const approveState = await campaignContract.methods
+        .getApproveState(index, loginUserID)
+        .call();
+
+      setApproveState(approveState);
+    } catch (error) {
+      console.error(error);
+    }
+  }
 
   return (
-    <Button size="mini" disabled={approveReady} as="div" labelPosition="right">
+    <Button
+      size="mini"
+      disabled={approveReady || approveState}
+      as="div"
+      labelPosition="right"
+    >
       <Button size="mini" color="teal" onClick={approveRequest}>
-        {approveReady ? "과반수" : "승인"}
+        {approveReady ? "과반수" : approveState ? "승인 완료" : "승인"}
       </Button>
       <Label size="mini" basic color="teal" pointing="left">
         {request.approvalCounts + " / " + contributorsCount}

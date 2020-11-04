@@ -42,8 +42,6 @@ function Campaign() {
     managerID: "",
   });
 
-  console.log("detailedInfos", detailedInfos);
-
   useEffect(() => {
     if (initialized) {
       dispatch(ethActions.loadCampaignContractRequest({ web3, address }));

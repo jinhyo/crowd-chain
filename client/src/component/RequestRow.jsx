@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Table, Button, Label } from "semantic-ui-react";
 import ApproveButton from "./ApproveButton";
 import FinalizeButton from "./FinalizeButton";
@@ -10,8 +10,33 @@ function RequestRow({
   contributorsCount,
   campaignContract,
 }) {
+  const [approveReady, setapproveReady] = useState(false);
+  const [contributors, setContributors] = useState([]);
+  const [managerID, setManagerID] = useState("");
+  console.log("contributors", contributors);
+  console.log("managerID", managerID);
+
+  useEffect(() => {
+    if (campaignContract) {
+      getParticipantsInfo(campaignContract);
+    }
+    const approveReady =
+      request.approvalCounts > parseInt(contributorsCount / 2);
+    setapproveReady(approveReady);
+  }, [campaignContract, request]);
+
+  async function getParticipantsInfo(campaignContract) {
+    try {
+      const result = await campaignContract.methods.getParticipants().call();
+      console.log("result", result);
+      setManagerID(result[0]);
+      setContributors(result[1]);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
   const { Row, Cell } = Table;
-  const approveReady = request.approvalCounts > parseInt(contributorsCount / 2);
 
   return (
     <Row
@@ -25,22 +50,23 @@ function RequestRow({
       <Cell textAlign="center">
         <ApproveButton
           id={id}
-          web3={web3}
           request={request}
           contributorsCount={contributorsCount}
           approveReady={approveReady}
           campaignContract={campaignContract}
+          contributors={contributors}
         />
       </Cell>
 
       <Cell textAlign="center">
         <FinalizeButton
           id={id}
-          web3={web3}
           request={request}
           contributorsCount={contributorsCount}
           approveReady={approveReady}
           campaignContract={campaignContract}
+          managerID={managerID}
+          contributors={contributors}
         />
       </Cell>
     </Row>

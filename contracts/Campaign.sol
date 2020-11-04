@@ -1,4 +1,5 @@
 pragma solidity >=0.4.21 <0.7.0;
+pragma experimental ABIEncoderV2;
 
 contract CampaignFactory {
     address[] public totalCampaigns;
@@ -33,11 +34,11 @@ contract Campaign {
         ownerID = _ownerID;
     }
 
-    string ownerID;
+    string public ownerID;
     uint256 minimumContribution;
     address public owner;
     mapping(string => address[]) approvers;
-    string[] approverIDs;
+    string[] public approverIDs;
     uint256 public approveCounts;
     RequestInfo[] public requests;
 
@@ -66,6 +67,17 @@ contract Campaign {
             "You are not the owner"
         );
         _;
+    }
+
+    function getParticipants()
+        public
+        view
+        returns (string memory, string[] memory)
+    {
+        string memory managerID = ownerID;
+        string[] memory contributors = approverIDs;
+
+        return (managerID, contributors);
     }
 
     function getMinmum() public view returns (uint256) {
@@ -112,12 +124,13 @@ contract Campaign {
         string memory _ownerID
     ) public restricted(_ownerID) {
         require(_value <= address(this).balance, "Too much value");
+
         RequestInfo memory newRequest = RequestInfo({
             description: _description,
             value: _value,
-            recipient: _recipient,
+            approvalCounts: 0,
             complete: false,
-            approvalCounts: 0
+            recipient: _recipient
         });
 
         requests.push(newRequest);
@@ -152,6 +165,17 @@ contract Campaign {
 
         request.recipient.transfer(request.value);
         request.complete = true;
+    }
+
+    function getApproveState(uint256 _index, string memory _callerID)
+        public
+        view
+        returns (bool)
+    {
+        RequestInfo storage request = requests[_index];
+        bool approveState = request.approvals[_callerID];
+
+        return approveState;
     }
 
     function getSummary()

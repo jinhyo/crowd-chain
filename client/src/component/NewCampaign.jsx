@@ -74,9 +74,10 @@ function NewCampaign({ history }) {
         const minimumEther = web3.utils.toWei(input.minimumContribution);
         console.log("loginUser.id", loginUser.id);
 
+        const [account] = await web3.eth.getAccounts();
         const project = await factoryContract.methods
           .createCampaign(minimumEther, encodeURIComponent(loginUser.id))
-          .send({ from: currentAccount });
+          .send({ from: account });
         console.log("`project", project);
         console.log(
           "`project.events.NewCampaign.returnValues.ownerID",
@@ -109,7 +110,7 @@ function NewCampaign({ history }) {
         setLoading(false);
       }
     },
-    [input, web3, currentAccount, factoryContract, loginUser]
+    [input, web3, factoryContract, loginUser]
   );
 
   return (
