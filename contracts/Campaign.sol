@@ -37,6 +37,7 @@ contract Campaign {
     uint256 minimumContribution;
     address public owner;
     mapping(string => address[]) approvers;
+    string[] approverIDs;
     uint256 public approveCounts;
     RequestInfo[] public requests;
 
@@ -52,15 +53,9 @@ contract Campaign {
     event Contribute(
         uint256 balance,
         uint256 approveCounts,
+        uint256 contributionAmount,
         string indexed approverID,
         address indexed approverAddress
-    );
-    event Request(
-        string description,
-        uint256 value,
-        uint256 approvalCounts,
-        bool complete,
-        address payable recipient
     );
 
     modifier restricted(string memory _ownerID) {
@@ -85,6 +80,7 @@ contract Campaign {
         if (approvers[_approverID].length < 1) {
             approveCounts++;
             approvers[_approverID].push(msg.sender);
+            approverIDs.push(_approverID);
         } else {
             // 다른 계좌를 사용했을 경우에는 계좌 추가
             address[] storage approverAccounts = approvers[_approverID];
@@ -103,11 +99,13 @@ contract Campaign {
         emit Contribute(
             address(this).balance,
             approveCounts,
+            msg.value,
             _approverID,
             msg.sender
         );
     }
 
+    
     function createRequest(
         string memory _description,
         uint256 _value,
@@ -138,10 +136,14 @@ contract Campaign {
         request.approvalCounts++;
     }
 
-    function finalizeRequest(uint256 _index, string memory _ownerID)
-        public
-        restricted(_ownerID)
-    {
+    function finalizeRequest(uint256 _index, string memory _callerID) public {
+        string memory ownersID = ownerID;
+        require(
+            approvers[_callerID].length > 0 ||
+                keccak256(abi.encodePacked(ownersID)) ==
+                keccak256(abi.encodePacked(_callerID)),
+            "You are not allowed to call this function"
+        );
         RequestInfo storage request = requests[_index];
         require(
             request.approvalCounts > (approveCounts / 2),

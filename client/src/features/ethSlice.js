@@ -17,6 +17,7 @@ const ethSlice = createSlice({
     initialized: false,
     campaigns: [],
     currentAccount: "",
+    requestCall: 0,
   },
   reducers: {
     loadWeb3Request: (state) => {
@@ -76,7 +77,10 @@ const ethSlice = createSlice({
       state.currentAccount = account;
     },
     clearCampaignContract: (state) => {
-      state.contractInstance.campaignContract = null
+      state.contractInstance.campaignContract = null;
+    },
+    callGetRequest: (state) => {
+      state.requestCall++;
     },
   },
 });
@@ -127,6 +131,12 @@ const selectCurrentAccount = createSelector(
   (currentAccount) => currentAccount
 );
 
+const selectRequestCall = createSelector(
+  (state) => state.requestCall,
+
+  (requestCall) => requestCall
+);
+
 export const ethActions = ethSlice.actions;
 export const ethReducer = ethSlice.reducer;
 export const ETH = ethSlice.name;
@@ -138,4 +148,5 @@ export const ethSelector = {
   campaigns: (state) => selectCampaigns(state[ETH]),
   campaignContract: (state) => selectCampaignContract(state[ETH]),
   currentAccount: (state) => selectCurrentAccount(state[ETH]),
+  requestCall: (state) => selectRequestCall(state[ETH]),
 };

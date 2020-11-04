@@ -26,6 +26,8 @@ function NewRequest() {
     state: { managerAccount },
   } = useLocation();
 
+  console.log("managerAccount", managerAccount);
+
   const { initialized, web3 } = useSelector(ethSelector.all);
   const currentAccount = useSelector(ethSelector.currentAccount);
   const loginUserID = useSelector(userSelector.loginUserID);
@@ -89,7 +91,10 @@ function NewRequest() {
           )
           .send({ from: account });
         setLoading(false);
-        history.push(`/campaigns/${address}/usage`);
+        history.push({
+          pathname: `/campaigns/${address}/usage`,
+          state: { managerAccount: account },
+        });
       } catch (error) {
         setErrorMessage(error.message);
         setLoading(false);

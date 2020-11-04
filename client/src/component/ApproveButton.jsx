@@ -1,6 +1,8 @@
-import React, { useCallback } from "react";
-import { Button, Label } from "semantic-ui-react";
-import useInput from "../hooks/useInput";
+import React, { useCallback, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { Button, Label, Message } from "semantic-ui-react";
+import { ethActions } from "../features/ethSlice";
+import { userSelector } from "../features/userSlice";
 
 function ApproveButton({
   approveReady,
@@ -8,12 +10,20 @@ function ApproveButton({
   contributorsCount,
   campaignContract,
   id,
-  web3
+  web3,
 }) {
+  const dispatch = useDispatch();
+
+  const loginUserID = useSelector(userSelector.loginUserID);
+
   const approveRequest = useCallback(async () => {
     try {
       const [account] = await web3.eth.getAccounts();
-      await campaignContract.methods.approveRequest(id).send({ from: account });
+      await campaignContract.methods
+        .approveRequest(id, loginUserID)
+        .send({ from: account });
+
+      dispatch(ethActions.callGetRequest());
     } catch (error) {
       console.error(error);
     }

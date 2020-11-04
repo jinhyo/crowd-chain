@@ -1,6 +1,6 @@
 import React, { useEffect, useCallback, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { useLocation } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import Layout from "./Layout";
 import { ethSelector, ethActions } from "../features/ethSlice";
 import { Grid, Card, Button, Table } from "semantic-ui-react";
@@ -10,15 +10,19 @@ import UseFundingButton from "./UseFundingButton";
 import { Link } from "react-router-dom";
 import RequestRow from "./RequestRow";
 
-function Usage({ match }) {
-  const address = match.params.address;
+function Usage() {
+  const { address } = useParams();
   const {
     state: { managerAccount },
   } = useLocation();
   const dispatch = useDispatch();
 
+  console.log("managerAccount", managerAccount);
+
   const { initialized, web3 } = useSelector(ethSelector.all);
   const campaignContract = useSelector(ethSelector.campaignContract);
+  const requestCall = useSelector(ethSelector.requestCall);
+
   const [requests, setRequests] = useState([]);
   const [contributorsCount, setcontributorsCount] = useState("");
 
@@ -28,41 +32,31 @@ function Usage({ match }) {
     }
 
     if (campaignContract) {
-      async function getRequests() {
-        console.log("effect");
-
-        const requestsCount = await campaignContract.methods
-          .getRequestCounts()
-          .call();
-        const contributorsCount = await campaignContract.methods
-          .approveCounts()
-          .call();
-        setcontributorsCount(contributorsCount);
-
-        const requests = await Promise.all(
-          Array(parseInt(requestsCount))
-            .fill()
-            .map((r, index) => campaignContract.methods.requests(index).call())
-        );
-        console.log("requests", requests);
-        setRequests(requests);
-      }
-      getRequests();
+      getRequests(campaignContract);
     }
-  }, [campaignContract, initialized, address]);
+  }, [campaignContract, initialized, address, requestCall]);
 
-  //   useEffect(() => {
-  //     if (campaignContract) {
-  //       campaignContract.events
-  //         .Contribute()
-  //         .on("data", event => {
-  //           setBalance(web3.utils.fromWei(event.returnValues[0]));
-  //           setApproveCounts(event.returnValues[1]);
-  //           console.log("event", event);
-  //         })
-  //         .on("error", error => console.error(error));
-  //     }
-  //   }, [campaignContract]);
+  async function getRequests(campaignContract) {
+    try {
+      const requestsCount = await campaignContract.methods
+        .getRequestCounts()
+        .call();
+      const contributorsCount = await campaignContract.methods
+        .approveCounts()
+        .call();
+      setcontributorsCount(contributorsCount);
+
+      const requests = await Promise.all(
+        Array(parseInt(requestsCount))
+          .fill()
+          .map((r, index) => campaignContract.methods.requests(index).call())
+      );
+      console.log("requests", requests);
+      setRequests(requests);
+    } catch (error) {
+      console.error(error);
+    }
+  }
 
   const renderRequests = () => {
     return requests.map((request, index) => {
