@@ -38,23 +38,35 @@ function NewRequest() {
   const [description, setDescription] = useInput("");
   const [etherAmount, setEtherAmount] = useInput("");
   const [recipient, setRecipient] = useInput("");
-  const [contractDone, setContractDone] = useInput(true);
+  const [totalBalance, setTotalBalance] = useState(0);
 
   useEffect(() => {
-    if (initialized && contractDone) {
+    if (initialized && web3) {
       dispatch(ethActions.loadCampaignContractRequest({ web3, address }));
-      setContractDone(false);
     }
 
     return () => {
-      setContractDone(true);
+      dispatch(ethActions.clearCampaignContract());
     };
-  }, [initialized, address]);
+  }, [initialized, address, web3]);
+
+  useEffect(() => {
+    if (campaignContract) {
+      getTotalBalance(campaignContract, web3);
+    }
+  }, [campaignContract, web3]);
+
+  async function getTotalBalance(campaignContract, web3) {
+    const summary = await campaignContract.methods.getSummary().call();
+    setTotalBalance(web3.utils.fromWei(summary[1]));
+  }
 
   const onClickSubmit = useCallback(
     async (e) => {
       e.preventDefault();
-      if (managerAccount.toUpperCase() !== currentAccount.toUpperCase()) {
+      const [account] = await web3.eth.getAccounts();
+
+      if (managerAccount.toUpperCase() !== account.toUpperCase()) {
         return alert(
           `프로젝트를 생성한 계정으로 설정해 주세요. => ${managerAccount}`
         );
@@ -66,19 +78,21 @@ function NewRequest() {
       if (!description) {
         setLoading(false);
         return setErrorMessage("사용내역을 입력하세요.");
-      }
-      if (!etherAmount) {
+      } else if (!etherAmount) {
         setLoading(false);
         return setErrorMessage("필요 액수를 입력하세요.");
-      }
-      if (!recipient) {
+      } else if (!recipient) {
         setLoading(false);
         return setErrorMessage("공급처를 입력하세요.");
+      } else if (etherAmount > totalBalance) {
+        setLoading(false);
+        return setErrorMessage(
+          `현재 모금액(${totalBalance} ETH)보다 많은 액수를 요청할수 없습니다.`
+        );
       }
 
       try {
         const weiAmount = web3.utils.toWei(etherAmount);
-        const [account] = await web3.eth.getAccounts();
         console.log("account", account);
         console.log("loginUserID", loginUserID);
 
@@ -106,8 +120,8 @@ function NewRequest() {
       recipient,
       campaignContract,
       managerAccount,
-      currentAccount,
       loginUserID,
+      totalBalance,
     ]
   );
 
