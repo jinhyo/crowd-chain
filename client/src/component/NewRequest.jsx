@@ -87,14 +87,12 @@ function NewRequest() {
       } else if (etherAmount > totalBalance) {
         setLoading(false);
         return setErrorMessage(
-          `현재 모금액(${totalBalance} ETH)보다 많은 액수를 요청할수 없습니다.`
+          `현재 모금액(${totalBalance} ETH)보다 많은 액수를 요청할 수 없습니다.`
         );
       }
 
       try {
         const weiAmount = web3.utils.toWei(etherAmount);
-        console.log("account", account);
-        console.log("loginUserID", loginUserID);
 
         await campaignContract.methods
           .createRequest(

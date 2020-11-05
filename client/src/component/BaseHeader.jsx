@@ -1,6 +1,6 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { Menu, Icon, Image, Dropdown, Header } from "semantic-ui-react";
+import { Menu, Icon, Image, Dropdown, Header, Button } from "semantic-ui-react";
 import { Link, useHistory } from "react-router-dom";
 
 import { userActions, userSelector } from "../features/userSlice";
@@ -11,6 +11,19 @@ function BaseHeader() {
 
   const loginUser = useSelector(userSelector.loginUser);
   const history = useHistory();
+
+  const [googleLoginLoading, setGoogleLoginLoading] = useState(false);
+
+  const handleGoogleLogin = useCallback(async () => {
+    try {
+      setGoogleLoginLoading(true);
+      await firebaseFuntions.googleLogin();
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setGoogleLoginLoading(false);
+    }
+  }, []);
 
   const logout = useCallback(async () => {
     try {
@@ -68,11 +81,14 @@ function BaseHeader() {
               </Dropdown>
             </>
           ) : (
-            <>
-              <Link to="/login" className="item">
-                <p>로그인</p>
-              </Link>
-            </>
+            <Button
+              loading={googleLoginLoading}
+              color="teal"
+              floated="right"
+              onClick={handleGoogleLogin}
+            >
+              <Icon name="google" />
+            </Button>
           )}
         </Menu.Menu>
       </Menu>
