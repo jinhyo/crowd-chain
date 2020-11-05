@@ -1,9 +1,6 @@
 import React, { useCallback, useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useLocation, useParams, useHistory } from "react-router-dom";
-import Layout from "./Layout";
-import { ethSelector } from "../features/ethSlice";
-import useInput from "../hooks/useInput";
 import {
   Form,
   Input,
@@ -15,6 +12,10 @@ import {
   Header,
   Segment,
 } from "semantic-ui-react";
+
+import Layout from "./Layout";
+import { ethSelector } from "../features/ethSlice";
+import useInput from "../hooks/useInput";
 import { ethActions } from "../features/ethSlice";
 import { userSelector } from "../features/userSlice";
 
@@ -26,10 +27,7 @@ function NewRequest() {
     state: { managerAccount },
   } = useLocation();
 
-  console.log("managerAccount", managerAccount);
-
   const { initialized, web3 } = useSelector(ethSelector.all);
-  const currentAccount = useSelector(ethSelector.currentAccount);
   const loginUserID = useSelector(userSelector.loginUserID);
   const campaignContract = useSelector(ethSelector.campaignContract);
 
@@ -87,7 +85,7 @@ function NewRequest() {
       } else if (etherAmount > totalBalance) {
         setLoading(false);
         return setErrorMessage(
-          `현재 모금액(${totalBalance} ETH)보다 많은 액수를 요청할 수 없습니다.`
+          `현재 모금액(${totalBalance} Ether)보다 많은 액수를 요청할 수 없습니다.`
         );
       }
 
@@ -146,7 +144,7 @@ function NewRequest() {
                   label="필요 액수"
                   labelPosition="left"
                   value={etherAmount}
-                  placeholder="ETH"
+                  placeholder="Ether"
                   onChange={(e) => setEtherAmount(e.target.value)}
                 />
                 <p />

@@ -1,4 +1,5 @@
 import { takeLatest, put, fork, all, call } from "redux-saga/effects";
+
 import { ethActions } from "./ethSlice";
 import getContract from "../lib/getContract";
 import getWeb3 from "../lib/getWeb3";

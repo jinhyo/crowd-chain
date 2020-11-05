@@ -1,5 +1,5 @@
-import React, { useCallback } from "react";
-import { Button, Divider } from "semantic-ui-react";
+import React from "react";
+import { Button } from "semantic-ui-react";
 import { Link } from "react-router-dom";
 
 function UseFundingButton({ address, managerAccount }) {

@@ -2,7 +2,7 @@ import React from "react";
 import { Menu, Icon, Button } from "semantic-ui-react";
 import { Link } from "react-router-dom";
 
-function Header(props) {
+function Header() {
   return (
     <>
       <Menu style={{ marginTop: "10px" }}>

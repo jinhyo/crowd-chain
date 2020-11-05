@@ -1,5 +1,6 @@
 import createSagaMiddleWare from "redux-saga";
 import { configureStore, combineReducers } from "@reduxjs/toolkit";
+
 import { ETH, ethReducer } from "../features/ethSlice";
 import rootSaga from "../features";
 import { USER, userReducer } from "../features/userSlice";

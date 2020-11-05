@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Button, Label, Message } from "semantic-ui-react";
+import { Button, Label } from "semantic-ui-react";
+
 import { ethActions, ethSelector } from "../features/ethSlice";
 import { userSelector } from "../features/userSlice";
 
@@ -13,12 +14,11 @@ function ApproveButton({
   contributors,
 }) {
   const dispatch = useDispatch();
-  console.log("request", request);
   const loginUserID = useSelector(userSelector.loginUserID);
   const { web3 } = useSelector(ethSelector.all);
 
   const [approveState, setApproveState] = useState(false);
-  console.log("approveState", approveState);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (campaignContract && loginUserID) {
@@ -35,6 +35,7 @@ function ApproveButton({
       if (!canIApprove(contributors, loginUserID)) {
         return alert("참여자만 승인할 수 있습니다.");
       }
+      setLoading(true);
       const [account] = await web3.eth.getAccounts();
       await campaignContract.methods
         .approveRequest(id, loginUserID)
@@ -43,6 +44,8 @@ function ApproveButton({
       dispatch(ethActions.callGetRequest());
     } catch (error) {
       console.error(error);
+    } finally {
+      setLoading(false);
     }
   }, [contributors, loginUserID]);
 
@@ -65,7 +68,12 @@ function ApproveButton({
       as="div"
       labelPosition="right"
     >
-      <Button size="mini" color="teal" onClick={approveRequest}>
+      <Button
+        size="mini"
+        color="teal"
+        onClick={approveRequest}
+        loading={loading}
+      >
         {approveReady ? "과반수" : approveState ? "승인 완료" : "승인"}
       </Button>
       <Label size="mini" basic color="teal" pointing="left">

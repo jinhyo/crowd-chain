@@ -3,8 +3,9 @@ import { useDispatch, useSelector } from "react-redux";
 import ReactDOM from "react-dom";
 import { Provider } from "react-redux";
 import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
+
 import store from "./store/configureStore";
-import { ethActions, ethSelector } from "./features/ethSlice";
+import { ethActions } from "./features/ethSlice";
 import "semantic-ui-css/semantic.min.css";
 import Campaign from "./component/Campaign";
 import NewCampaign from "./component/NewCampaign";
@@ -23,19 +24,16 @@ store.dispatch(ethActions.loadWeb3Request());
 function Index() {
   const dispatch = useDispatch();
 
-  const { initialized, web3, factoryContract } = useSelector(ethSelector.all);
-
   const userLoading = useSelector(userSelector.userLoading);
 
   useEffect(() => {
     window.ethereum.on("accountsChanged", (accounts) => {
       dispatch(ethActions.setCurrentAccount(accounts[0]));
-      console.log("accounts", accounts[0]);
     });
 
-    // if (window.ethereum.chainId !== "0x4") {
-    //   alert("네트워크를 Rinkeby 테스트넷으로 설정해 주세요.");
-    // }
+    if (window.ethereum.chainId !== "0x4") {
+      alert("네트워크를 Rinkeby 테스트넷으로 설정해 주세요.");
+    }
   }, []);
 
   // 로그인 유저 체크 & 가져오기

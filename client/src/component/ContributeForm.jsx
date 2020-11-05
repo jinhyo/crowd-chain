@@ -1,8 +1,8 @@
 import React, { useCallback } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
+import { Form, Input, Button, Message } from "semantic-ui-react";
+
 import useInput from "../hooks/useInput";
-import { Form, Input, Button, Message, Icon } from "semantic-ui-react";
-import { ethSelector } from "../features/ethSlice";
 import { userSelector } from "../features/userSlice";
 import firebaseFuntions from "../firebase";
 
@@ -17,7 +17,6 @@ function ContributeForm({
   const [errorMessage, setErrorMessage] = useInput("");
   const [contributionAmount, setContributionAmount] = useInput("");
   const [loading, setLoading] = useInput(false);
-  console.log("contributionAmount", contributionAmount);
 
   const onClickSubmit = useCallback(
     async (e) => {
@@ -32,7 +31,7 @@ function ContributeForm({
       if (contributionAmount < minimumContribution) {
         setLoading(false);
         return setErrorMessage(
-          `최소 펀딩금액은 ${minimumContribution}ETH 입니다.`
+          `최소 펀딩금액은 ${minimumContribution} Ether 입니다.`
         );
       }
 

@@ -1,15 +1,14 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import Layout from "./component/Layout";
-import { Card, Button, Grid, Divider, Image, Icon } from "semantic-ui-react";
+import { Card, Grid, Divider, Image, Icon } from "semantic-ui-react";
 import { Link } from "react-router-dom";
+
 import { ethSelector } from "./features/ethSlice";
 import firebaseFuntions from "./firebase";
 import ContentsLoading from "./component/ContentsLoading";
 
 function Main() {
-  const dispatch = useDispatch();
-
   const { web3 } = useSelector(ethSelector.all);
 
   const [campaignInfos, setCampaignInfos] = useState([]);
@@ -73,7 +72,7 @@ function Main() {
                     web3.utils.fromWei(
                       campaign.totalContribution.toString()
                     )}{" "}
-                  ETH
+                  Ether
                 </div>
               </Card.Content>
             </Card>

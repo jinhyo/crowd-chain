@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useLocation, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import {
   Card,
   Divider,
@@ -10,6 +10,7 @@ import {
   Header,
   Segment,
 } from "semantic-ui-react";
+
 import { ethActions, ethSelector } from "../features/ethSlice";
 import firebaseFuntions from "../firebase";
 import ContentsLoading from "./ContentsLoading";
@@ -26,8 +27,6 @@ function TotalFunding() {
   const [totalBalance, setTotalBalance] = useState("");
   const [loading, setLoading] = useState(false);
 
-  console.log("contributionInfos", contributionInfos);
-  console.log("totalBalance", totalBalance);
   // contract 가져오기
   useEffect(() => {
     if (initialized) {
@@ -50,7 +49,7 @@ function TotalFunding() {
   // 전체 펀딩금액 가져오기
   async function getTotalBalance(campaignContract, web3) {
     const balance = await campaignContract.methods.getTotalBalance().call();
-    setTotalBalance(web3.utils.fromWei(balance) + " ETH");
+    setTotalBalance(web3.utils.fromWei(balance) + " Ether");
   }
 
   // Contribute event 가져오기
@@ -106,7 +105,9 @@ function TotalFunding() {
                     <Feed.Label image={info.avatarURL} />
                     <Feed.Content>
                       <Feed.Content>{info.nickname}</Feed.Content>
-                      <Feed.Summary>{info.contributionAmount} ETH</Feed.Summary>
+                      <Feed.Summary>
+                        {info.contributionAmount} Ether
+                      </Feed.Summary>
                     </Feed.Content>
                   </Feed.Event>
                 ))}

@@ -16688,6 +16688,44 @@
     "version": "0.6.6+commit.6c089d02.Emscripten.clang"
   },
   "networks": {
+    "4": {
+      "events": {
+        "0x80fd979a6a85c39c10f8f166ed780d89966020070ce7df691916d104082786a7": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "campaignAddress",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "ownerAddress",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "minimumValue",
+              "type": "uint256"
+            },
+            {
+              "indexed": true,
+              "internalType": "string",
+              "name": "ownerID",
+              "type": "string"
+            }
+          ],
+          "name": "NewCampaign",
+          "type": "event"
+        }
+      },
+      "links": {},
+      "address": "0x0386bc3F76cc674F67210B54C615703E50990cC0",
+      "transactionHash": "0xe9ae051d8b72ecfc82936900e7abdf5ba391e94265bbb374afa39cbd691ac780"
+    },
     "5777": {
       "events": {
         "0x160b1df5a7e96f75a8053312950bfc601a193a6cd260022b3cc0cf391df7d74e": {
@@ -16753,7 +16791,7 @@
     }
   },
   "schemaVersion": "3.2.0",
-  "updatedAt": "2020-11-05T02:46:05.197Z",
+  "updatedAt": "2020-11-05T04:43:01.209Z",
   "networkType": "ethereum",
   "devdoc": {
     "methods": {}

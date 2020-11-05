@@ -1,22 +1,21 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import Layout from "./Layout";
-import { ethSelector, ethActions } from "../features/ethSlice";
 import {
   Grid,
   Card,
   Button,
-  Message,
   Image,
   Divider,
   Header,
   Segment,
   Popup,
 } from "semantic-ui-react";
+
+import { ethSelector, ethActions } from "../features/ethSlice";
 import ContributeForm from "./ContributeForm";
 import UseFundingButton from "./UseFundingButton";
-import { Link } from "react-router-dom";
 import firebaseFuntions from "../firebase";
 import { userSelector } from "../features/userSlice";
 
@@ -102,7 +101,6 @@ function Campaign() {
             balance: web3.utils.fromWei(event.returnValues[0]),
             approveCounts: event.returnValues[1],
           }));
-          console.log("event", event);
         })
         .on("error", (error) => console.error(error));
     }
@@ -111,7 +109,7 @@ function Campaign() {
   const renderCampaignDetails = useCallback(
     () => (
       <Card.Group>
-        <Card>
+        <Card centered>
           <Image src={detailedInfos.pictureURL} wrapped />
         </Card>
         <Card color="red" fluid style={{ overflowWrap: "break-word" }}>
@@ -140,7 +138,7 @@ function Campaign() {
 
         <Card color="blue">
           <Card.Content>
-            <Card.Header>{detailedInfos.minimumContribution} ETH</Card.Header>
+            <Card.Header>{detailedInfos.minimumContribution} Ether</Card.Header>
             <Card.Meta>최소 펀딩금액</Card.Meta>
           </Card.Content>
         </Card>
@@ -155,7 +153,7 @@ function Campaign() {
                 content="상세보기"
               />
             </Link>
-            <Card.Header>{detailedInfos.balance} ETH</Card.Header>
+            <Card.Header>{detailedInfos.balance} Ether</Card.Header>
             <Card.Meta>모금액</Card.Meta>
           </Card.Content>
         </Card>

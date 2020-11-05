@@ -2,18 +2,13 @@ import React, { useEffect, useCallback, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useLocation, useParams } from "react-router-dom";
 import Layout from "./Layout";
+import { Grid, Table, GridColumn, Divider } from "semantic-ui-react";
+
 import { ethSelector, ethActions } from "../features/ethSlice";
-import {
-  Grid,
-  Card,
-  Button,
-  Table,
-  GridColumn,
-  Divider,
-} from "semantic-ui-react";
 import UseFundingButton from "./UseFundingButton";
 import RequestRow from "./RequestRow";
 import { userSelector } from "../features/userSlice";
+import ContentsLoading from "./ContentsLoading";
 
 function Usage() {
   const { address } = useParams();
@@ -30,6 +25,7 @@ function Usage() {
   const [requests, setRequests] = useState([]);
   const [contributorsCount, setcontributorsCount] = useState("");
   const [managerID, setManagerID] = useState("");
+  const [loading, setLoading] = useState("");
 
   useEffect(() => {
     if (initialized && !campaignContract) {
@@ -43,6 +39,7 @@ function Usage() {
 
   async function getRequests(campaignContract) {
     try {
+      setLoading(true);
       const requestsCount = await campaignContract.methods
         .getRequestCounts()
         .call();
@@ -56,15 +53,14 @@ function Usage() {
           .fill()
           .map((r, index) => campaignContract.methods.requests(index).call())
       );
-
       const managerID = await campaignContract.methods.ownerID().call();
 
-      console.log("managerID", managerID);
-      console.log("requests", requests);
       setManagerID(managerID);
       setRequests(requests);
     } catch (error) {
       console.error(error);
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -114,6 +110,7 @@ function Usage() {
         </Header>
         <Body>{requests ? renderRequests() : null}</Body>
       </Table>
+      {loading && <ContentsLoading />}
     </Layout>
   );
 }

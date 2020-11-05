@@ -17,6 +17,7 @@ import {
   Card,
   Image,
 } from "semantic-ui-react";
+
 import { userSelector } from "../features/userSlice";
 import firebaseFuntions from "../firebase";
 
@@ -24,7 +25,6 @@ function NewCampaign({ history }) {
   const imageRef = useRef();
 
   const { web3, factoryContract } = useSelector(ethSelector.all);
-  const currentAccount = useSelector(ethSelector.currentAccount);
   const loginUser = useSelector(userSelector.loginUser);
 
   const [errorMessage, setErrorMessage] = useInput("");
@@ -50,8 +50,6 @@ function NewCampaign({ history }) {
     if (e.target.files.length > 0) {
       setErrorMessage("");
       const [image] = e.target.files;
-      console.log("image", image);
-      console.log("image", image.type);
       const reader = new FileReader();
 
       reader.readAsDataURL(image);
@@ -79,13 +77,13 @@ function NewCampaign({ history }) {
         return setErrorMessage("프로젝트명을 정하세요");
       } else if (!input.minimumContribution) {
         setLoading(false);
-        return setErrorMessage("최소 후원비용을 입력하세요.");
+        return setErrorMessage("최소 펀딩비용을 입력하세요.");
       } else if (
         typeof Number(input.minimumContribution) !== "number" ||
         Number(input.minimumContribution) <= 0
       ) {
         setLoading(false);
-        return setErrorMessage("최소 후원비용은 0 이상의 금액을 입력하세요");
+        return setErrorMessage("최소 펀딩비용은 0 이상의 금액을 입력하세요");
       } else if (!input.description) {
         setLoading(false);
         return setErrorMessage("프로젝트 설명을 작성하세요");
@@ -126,8 +124,8 @@ function NewCampaign({ history }) {
         };
         await firebaseFuntions.createProject(newProject);
         setLoading(false);
+
         history.push("/");
-        console.log("done");
       } catch (error) {
         setErrorMessage(error.message);
         setLoading(false);
@@ -163,9 +161,9 @@ function NewCampaign({ history }) {
               <Form.Field>
                 <Input
                   name="minimumContribution"
-                  label="ETHER"
+                  label="Ether"
                   labelPosition="right"
-                  placeholder="최소 후원비용"
+                  placeholder="최소 펀딩비용"
                   value={input.minimumContribution}
                   onChange={handleInputChange}
                 />

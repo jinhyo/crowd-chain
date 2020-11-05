@@ -21,13 +21,17 @@ class Firebase {
 
     const { user } = await this.auth.signInWithPopup(provider);
 
-    await this.db.collection("users").doc(user.uid).set({
-      id: user.uid,
-      nickname: user.displayName,
-      avatarURL: user.photoURL,
-      projectsICreated: [],
-      projectsIJoined: [],
-    });
+    const userSnap = await this.db.collection("users").doc(user.uid).get();
+
+    if (!userSnap.exists) {
+      await this.db.collection("users").doc(user.uid).set({
+        id: user.uid,
+        nickname: user.displayName,
+        avatarURL: user.photoURL,
+        projectsICreated: [],
+        projectsIJoined: [],
+      });
+    }
   }
 
   checkAuth(cb) {
@@ -37,11 +41,6 @@ class Firebase {
   async getLoginUser(user) {
     const userSnap = await this.db.collection("users").doc(user.uid).get();
     const userData = userSnap.data();
-    // const userData = {
-    //   id: user.uid,
-    //   nickname: user.displayName,
-    //   avatarURL: user.photoURL,
-    // };
 
     return userData;
   }

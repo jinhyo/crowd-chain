@@ -1,5 +1,6 @@
-import React, { useCallback, useEffect, useState } from "react";
-import { Table, Button, Label } from "semantic-ui-react";
+import React, { useEffect, useState } from "react";
+import { Table } from "semantic-ui-react";
+
 import ApproveButton from "./ApproveButton";
 import FinalizeButton from "./FinalizeButton";
 
@@ -13,8 +14,6 @@ function RequestRow({
   const [approveReady, setapproveReady] = useState(false);
   const [contributors, setContributors] = useState([]);
   const [managerID, setManagerID] = useState("");
-  console.log("contributors", contributors);
-  console.log("managerID", managerID);
 
   useEffect(() => {
     if (campaignContract) {
@@ -28,7 +27,6 @@ function RequestRow({
   async function getParticipantsInfo(campaignContract) {
     try {
       const result = await campaignContract.methods.getParticipants().call();
-      console.log("result", result);
       setManagerID(result[0]);
       setContributors(result[1]);
     } catch (error) {
