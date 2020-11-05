@@ -38,6 +38,7 @@ contract Campaign {
     uint256 minimumContribution;
     address public owner;
     mapping(string => address[]) approvers;
+    mapping(string => uint256) contributionAmount;
     string[] public approverIDs;
     uint256 public approveCounts;
     RequestInfo[] public requests;
@@ -69,6 +70,24 @@ contract Campaign {
         _;
     }
 
+    function getContributionAmounts()
+        public
+        view
+        returns (string[] memory, uint256[] memory)
+    {
+        string[] memory IDs = new string[](approverIDs.length);
+        uint256[] memory contributionAmounts = new uint256[](
+            approverIDs.length
+        );
+
+        for (uint256 i = 0; i < approverIDs.length; i++) {
+            IDs[i] = approverIDs[i];
+            contributionAmounts[i] = contributionAmount[approverIDs[i]];
+        }
+
+        return (IDs, contributionAmounts);
+    }
+
     function getParticipants()
         public
         view
@@ -92,6 +111,7 @@ contract Campaign {
         if (approvers[_approverID].length < 1) {
             approveCounts++;
             approvers[_approverID].push(msg.sender);
+            contributionAmount[_approverID] = msg.value;
             approverIDs.push(_approverID);
         } else {
             // 다른 계좌를 사용했을 경우에는 계좌 추가
@@ -106,6 +126,7 @@ contract Campaign {
             if (isNew == true) {
                 approvers[_approverID].push(msg.sender);
             }
+            contributionAmount[_approverID] += msg.value;
         }
 
         emit Contribute(

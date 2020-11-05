@@ -152,6 +152,14 @@ class Firebase {
 
     return { projectsICreated, projectsIJoined };
   }
+
+  async uploadImage(imageFile) {
+    const uploadSnap = await this.storage
+      .ref(`projectImages/${Date.now()}`)
+      .put(imageFile);
+    const imageURL = await uploadSnap.ref.getDownloadURL();
+    return imageURL;
+  }
 }
 
 const firebaseFuntions = new Firebase();

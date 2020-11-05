@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import Layout from "./Layout";
 import { ethSelector } from "../features/ethSlice";
@@ -14,30 +14,59 @@ import {
   Header,
   TextArea,
   Segment,
+  Card,
+  Image,
 } from "semantic-ui-react";
 import { userSelector } from "../features/userSlice";
 import firebaseFuntions from "../firebase";
 
 function NewCampaign({ history }) {
+  const imageRef = useRef();
+
   const { web3, factoryContract } = useSelector(ethSelector.all);
   const currentAccount = useSelector(ethSelector.currentAccount);
   const loginUser = useSelector(userSelector.loginUser);
 
   const [errorMessage, setErrorMessage] = useInput("");
+  const [loading, setLoading] = useInput(false);
   const [input, setInput] = useState({
     topic: "",
     minimumContribution: "",
     description: "",
   });
-  const [loading, setLoading] = useInput(false);
+  const [previewImageURL, setPreviewImageURL] = useState(null);
+  const [imageFile, setImageFile] = useState(null);
 
   const handleInputChange = useCallback((e) => {
     e.persist();
+    setErrorMessage("");
     setInput((prev) => ({
       ...prev,
       [e.target.name]: e.target.value,
     }));
   }, []);
+
+  const handleImageChange = useCallback((e) => {
+    if (e.target.files.length > 0) {
+      setErrorMessage("");
+      const [image] = e.target.files;
+      console.log("image", image);
+      console.log("image", image.type);
+      const reader = new FileReader();
+
+      reader.readAsDataURL(image);
+      reader.onload = () => {
+        setPreviewImageURL(reader.result);
+        setImageFile(image);
+      };
+    }
+  }, []);
+
+  const handleImageInput = useCallback(() => {
+    if (imageRef.current) {
+      imageRef.current.click();
+    }
+  }, [imageRef]);
 
   const onClickSubmit = useCallback(
     async (e) => {
@@ -45,7 +74,10 @@ function NewCampaign({ history }) {
       setLoading(true);
       setErrorMessage("");
 
-      if (!input.minimumContribution) {
+      if (!input.topic) {
+        setLoading(false);
+        return setErrorMessage("프로젝트명을 정하세요");
+      } else if (!input.minimumContribution) {
         setLoading(false);
         return setErrorMessage("최소 후원비용을 입력하세요.");
       } else if (
@@ -54,12 +86,12 @@ function NewCampaign({ history }) {
       ) {
         setLoading(false);
         return setErrorMessage("최소 후원비용은 0 이상의 금액을 입력하세요");
-      } else if (!input.topic) {
-        setLoading(false);
-        return setErrorMessage("프로젝트명을 정하세요");
       } else if (!input.description) {
         setLoading(false);
         return setErrorMessage("프로젝트 설명을 작성하세요");
+      } else if (!previewImageURL) {
+        setLoading(false);
+        return setErrorMessage("이미지를 추가하세요");
       }
 
       try {
@@ -72,21 +104,13 @@ function NewCampaign({ history }) {
           return setErrorMessage("동일한 프로젝트명이 있습니다.");
         }
         const minimumEther = web3.utils.toWei(input.minimumContribution);
-        console.log("loginUser.id", loginUser.id);
 
         const [account] = await web3.eth.getAccounts();
         const project = await factoryContract.methods
           .createCampaign(minimumEther, encodeURIComponent(loginUser.id))
           .send({ from: account });
-        console.log("`project", project);
-        console.log(
-          "`project.events.NewCampaign.returnValues.ownerID",
-          project.events.NewCampaign.returnValues.ownerID
-        );
-        console.log(
-          "`web3.utils.keccak256(loginUser.id",
-          web3.utils.keccak256(loginUser.id)
-        );
+
+        const imageURL = await firebaseFuntions.uploadImage(imageFile);
         const newProject = {
           address: project.events.NewCampaign.returnValues.campaignAddress,
           managerAccount: project.events.NewCampaign.returnValues.ownerAddress,
@@ -98,8 +122,7 @@ function NewCampaign({ history }) {
           name: input.topic,
           participants: [],
           totalContribution: 0,
-          pictureURL:
-            "https://lh3.googleusercontent.com/-ByjfnGJ7388/AAAAAAAAAAI/AAAAAAAAAAA/AMZuuckCNlm5FokVcty6O46xwZwTgrDITw/s96-c/photo.jpg",
+          pictureURL: imageURL,
         };
         await firebaseFuntions.createProject(newProject);
         setLoading(false);
@@ -110,7 +133,7 @@ function NewCampaign({ history }) {
         setLoading(false);
       }
     },
-    [input, web3, factoryContract, loginUser]
+    [input, web3, factoryContract, loginUser, imageFile]
   );
 
   return (
@@ -122,7 +145,13 @@ function NewCampaign({ history }) {
             <Header as="h2">새 프로젝트 </Header>
           </Segment>
           <Segment stacked>
-            <Form onSubmit={onClickSubmit} error={!!errorMessage}>
+            {previewImageURL && (
+              <Card centered>
+                <Image src={previewImageURL} />
+              </Card>
+            )}
+
+            <Form error={!!errorMessage}>
               <Form.Field>
                 <Input
                   placeholder="프로젝트명"
@@ -151,10 +180,21 @@ function NewCampaign({ history }) {
               </Form.Field>
 
               <Message error header={errorMessage} />
-              <Button primary loading={loading}>
+              <Button primary loading={loading} onClick={onClickSubmit}>
                 프로젝트 등록
               </Button>
+              <Button
+                icon="picture"
+                color="instagram"
+                onClick={handleImageInput}
+              />
             </Form>
+            <input
+              type="file"
+              hidden
+              ref={imageRef}
+              onChange={handleImageChange}
+            />
           </Segment>
         </GridColumn>
       </Grid>

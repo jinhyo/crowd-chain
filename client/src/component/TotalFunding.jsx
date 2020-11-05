@@ -57,25 +57,15 @@ function TotalFunding() {
   async function getContributions(campaignContract, web3) {
     setLoading(true);
     try {
-      const contributions = await campaignContract.getPastEvents("Contribute", {
-        fromBlock: 0,
-      });
-      console.log("contributions", contributions);
+      const {
+        0: IDs,
+        1: contributionAmount,
+      } = await campaignContract.methods.getContributionAmounts().call();
 
-      const detailedContributions = contributions.reduce((ac, contribution) => {
-        const { approverID, contributionAmount } = contribution.returnValues;
-        const contributionInfo = ac.find((info) => info.id === approverID);
-        console.log(Number(contributionAmount));
-        if (!contributionInfo) {
-          ac.push({
-            id: approverID,
-            contributionAmount: Number(contributionAmount),
-          });
-        } else {
-          contributionInfo.contributionAmount += Number(contributionAmount);
-        }
-        return ac;
-      }, []);
+      const detailedContributions = IDs.map((ID, index) => ({
+        id: ID,
+        contributionAmount: contributionAmount[index],
+      }));
 
       addUserInfo(detailedContributions, web3);
       setLoading(false);
@@ -103,7 +93,7 @@ function TotalFunding() {
   return (
     <Layout>
       <Grid textAlign="center" verticalAlign="middle">
-        <GridColumn width={6}>
+        <GridColumn width={8}>
           <Divider hidden />
           <Segment basic>
             <Header as="h2">모금액: {totalBalance} </Header>

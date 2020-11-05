@@ -37,30 +37,34 @@ function FinalizeButton({
     return contributors.includes(loginUserID) || loginUserID === managerID;
   }
 
-  if (request.complete) {
-    return (
-      <Button
-        disabled={request.complete}
-        size="mini"
-        color="teal"
-        onClick={finalizeRequest}
-      >
-        지급 완료
-      </Button>
-    );
-  } else if (approveReady && !request.complete) {
-    return (
-      <Button size="mini" color="teal" onClick={finalizeRequest}>
-        지급 실행
-      </Button>
-    );
-  } else {
-    return (
-      <Button disabled size="mini" color="teal" onClick={finalizeRequest}>
-        투표 대기중
-      </Button>
-    );
-  }
+  const renderButton = useCallback(() => {
+    if (request.complete) {
+      return (
+        <Button
+          disabled={request.complete}
+          size="mini"
+          color="teal"
+          onClick={finalizeRequest}
+        >
+          지급 완료
+        </Button>
+      );
+    } else if (approveReady && !request.complete) {
+      return (
+        <Button size="mini" color="teal" onClick={finalizeRequest}>
+          지급 실행
+        </Button>
+      );
+    } else {
+      return (
+        <Button disabled size="mini" color="teal" onClick={finalizeRequest}>
+          투표 대기중
+        </Button>
+      );
+    }
+  }, [request]);
+
+  return renderButton();
 }
 
 export default FinalizeButton;
